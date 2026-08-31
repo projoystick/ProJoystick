@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Checkout — PROJOYSTICK</title>
+
+    <meta
+        name="description"
+        content="Complete your PROJOYSTICK purchase."
+    >
+
+    <link
+        rel="stylesheet"
+        href="../style.css"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================
+         NAVBAR
+    ========================================== -->
+
+    <header class="navbar">
+
+        <div class="nav-container">
+
+
+            <!-- LOGO -->
+
+            <a
+                href="../index.html"
+                class="logo"
+            >
+
+                <span class="logo-icon">
+                    ◆
+                </span>
+
+                PRO<span>JOYSTICK</span>
+
+            </a>
+
+
+            <!-- NAVIGATION -->
+
+            <nav class="nav-links">
+
+                <a href="../index.html">
+                    Home
+                </a>
+
+                <a href="games.html">
+                    Games
+                </a>
+
+                <a href="shop.html">
+                    Shop
+                </a>
+
+                <a href="../index.html#deals">
+                    Deals
+                </a>
+
+            </nav>
+
+
+            <!-- NAV ACTIONS -->
+
+            <div class="nav-actions">
+
+                <a
+                    href="cart.html"
+                    class="cart-btn"
+                    aria-label="Shopping cart"
+                >
+
+                    <span class="cart-icon">
+                        🛒
+                    </span>
+
+                    <span class="cart-count">
+                        0
+                    </span>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =========================================
+         CHECKOUT
+    ========================================== -->
+
+    <main class="checkout-page">
+
+
+        <!-- PAGE HEADER -->
+
+        <section class="checkout-header">
+
+            <span class="section-label">
+                PROJOYSTICK CHECKOUT
+            </span>
+
+            <h1>
+                Complete Your Order
+            </h1>
+
+            <p>
+                Review your items and select your
+                payment method before continuing.
+            </p>
+
+        </section>
+
+
+
+        <!-- =========================================
+             LOGIN REQUIRED
+        ========================================== -->
+
+        <section
+            id="checkoutLogin"
+            class="checkout-message"
+            style="display: none;"
+        >
+
+            <div class="checkout-message-icon">
+                🔐
+            </div>
+
+            <h2>
+                Login Required
+            </h2>
+
+            <p>
+                You need to be logged in before
+                placing an order.
+            </p>
+
+            <a
+                href="login.html"
+                class="primary-btn"
+            >
+                Login →
+            </a>
+
+        </section>
+
+
+
+        <!-- =========================================
+             EMPTY CART
+        ========================================== -->
+
+        <section
+            id="checkoutEmpty"
+            class="checkout-message"
+            style="display: none;"
+        >
+
+            <div class="checkout-message-icon">
+                🛒
+            </div>
+
+            <h2>
+                Your Cart Is Empty
+            </h2>
+
+            <p>
+                Add some gaming products before
+                continuing to checkout.
+            </p>
+
+            <a
+                href="shop.html"
+                class="primary-btn"
+            >
+                Browse Shop →
+            </a>
+
+        </section>
+
+
+
+        <!-- =========================================
+             CHECKOUT CONTENT
+        ========================================== -->
+
+        <section
+            id="checkoutContent"
+            class="checkout-layout"
+            style="display: none;"
+        >
+
+
+            <!-- =====================================
+                 CUSTOMER DETAILS
+            ====================================== -->
+
+            <div class="checkout-details">
+
+                <div class="checkout-card">
+
+                    <div class="checkout-card-header">
+
+                        <span class="section-label">
+                            CUSTOMER DETAILS
+                        </span>
+
+                        <h2>
+                            Billing Information
+                        </h2>
+
+                    </div>
+
+
+                    <form id="checkoutForm">
+
+
+                        <!-- NAME -->
+
+                        <div class="checkout-field">
+
+                            <label for="customerName">
+                                Full Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="customerName"
+                                name="customerName"
+                                placeholder="Enter your full name"
+                                autocomplete="name"
+                                required
+                            >
+
+                        </div>
+
+
+
+                        <!-- EMAIL -->
+
+                        <div class="checkout-field">
+
+                            <label for="customerEmail">
+                                Email Address
+                            </label>
+
+                            <input
+                                type="email"
+                                id="customerEmail"
+                                name="customerEmail"
+                                placeholder="Enter your email"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+
+
+                        <!-- =================================
+     PAYMENT METHOD
+================================== -->
+
+<div class="checkout-field">
+
+    <label for="paymentMethod">
+        Payment Method
+    </label>
+
+    <select
+        id="paymentMethod"
+        name="paymentMethod"
+        required
+    >
+
+        <option value="" disabled selected>
+            Select payment method
+        </option>
+
+        <option value="upi">
+            UPI
+        </option>
+
+        <option value="card">
+            Card
+        </option>
+
+        <option value="scan">
+            Scan
+        </option>
+
+    </select>
+
+</div>
+
+
+
+                        <!-- PAYMENT NOTICE -->
+
+                        <div class="checkout-payment-notice">
+
+                            <div class="checkout-payment-icon">
+                                🔒
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Secure Payment
+                                </strong>
+
+                                <p>
+                                    You will be redirected to
+                                    the payment page after
+                                    continuing.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- SUBMIT -->
+
+                        <button
+                            type="submit"
+                            id="checkoutSubmit"
+                            class="primary-btn checkout-submit"
+                        >
+
+                            Continue to Payment →
+
+                        </button>
+
+
+                    </form>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =====================================
+                 ORDER SUMMARY
+            ====================================== -->
+
+            <aside class="checkout-summary">
+
+
+                <div class="checkout-card">
+
+                    <div class="checkout-card-header">
+
+                        <span class="section-label">
+                            YOUR ORDER
+                        </span>
+
+                        <h2>
+                            Order Summary
+                        </h2>
+
+                    </div>
+
+
+
+                    <!-- ITEMS -->
+
+                    <div
+                        id="checkoutItems"
+                        class="checkout-items"
+                    >
+
+                        <!-- Products inserted by checkout.js -->
+
+                    </div>
+
+
+
+                    <!-- TOTALS -->
+
+                    <div class="checkout-totals">
+
+
+                        <div class="checkout-total-row">
+
+                            <span>
+                                Subtotal
+                            </span>
+
+                            <strong id="checkoutSubtotal">
+                                ₹0
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="checkout-total-row">
+
+                            <span>
+                                Delivery
+                            </span>
+
+                            <strong>
+                                FREE
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="checkout-divider"></div>
+
+
+
+                        <div
+                            class="checkout-total-row checkout-grand-total"
+                        >
+
+                            <span>
+                                Total
+                            </span>
+
+                            <strong id="checkoutTotal">
+                                ₹0
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- BACK TO CART -->
+
+                    <a
+                        href="cart.html"
+                        class="checkout-back"
+                    >
+                        ← Back to Cart
+                    </a>
+
+                </div>
+
+
+            </aside>
+
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+
+    <footer class="footer">
+
+        <div class="footer-container">
+
+
+            <div class="footer-brand">
+
+                <a
+                    href="../index.html"
+                    class="logo"
+                >
+
+                    <span class="logo-icon">
+                        ◆
+                    </span>
+
+                    PRO<span>JOYSTICK</span>
+
+                </a>
+
+                <p>
+                    Your destination for digital
+                    gaming products, currency
+                    and more.
+                </p>
+
+            </div>
+
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Marketplace
+                </h4>
+
+                <a href="games.html">
+                    Games
+                </a>
+
+                <a href="shop.html">
+                    Currency
+                </a>
+
+                <a href="shop.html">
+                    Items
+                </a>
+
+                <a href="../index.html#deals">
+                    Deals
+                </a>
+
+            </div>
+
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Account
+                </h4>
+
+                <a href="profile.html">
+                    Profile
+                </a>
+
+                <a href="orders.html">
+                    Orders
+                </a>
+
+                <a href="wishlist.html">
+                    Wishlist
+                </a>
+
+            </div>
+
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Support
+                </h4>
+
+                <a href="#">
+                    Help Center
+                </a>
+
+                <a href="#">
+                    Contact Us
+                </a>
+
+                <a href="#">
+                    Refund Policy
+                </a>
+
+                <a href="#">
+                    Terms
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="footer-bottom">
+
+            <p>
+                © 2026 PROJOYSTICK.
+                All rights reserved.
+            </p>
+
+            <div class="social-links">
+
+                <a href="#">
+                    Discord
+                </a>
+
+                <a href="#">
+                    X
+                </a>
+
+                <a href="#">
+                    Instagram
+                </a>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script
+        type="module"
+        src="../js/checkout.js"
+    ></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Game — PROJOYSTICK</title>
+    
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/game.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- ==========================================
+         NAVBAR
+    =========================================== -->
+
+    <header class="navbar">
+
+        <div class="nav-container">
+
+            <nav class="nav-links">
+
+                <a href="../index.html">
+                    Home
+                </a>
+
+                <a href="games.html">
+                    Games
+                </a>
+
+                <a href="cart.html">
+                    Cart
+                </a>
+
+                <a href="profile.html">
+                    Profile
+                </a>
+
+            </nav>
+
+
+            <div class="nav-actions">
+
+                <button
+                    class="search-btn"
+                    type="button"
+                    aria-label="Search"
+                >
+                    🔍
+                </button>
+
+
+                <button
+                    class="cart-btn"
+                    type="button"
+                    aria-label="Cart"
+                >
+
+                    🛒
+
+                    <span class="cart-count">
+                        0
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- ==========================================
+         GAME PAGE
+    =========================================== -->
+
+    <main class="game-page">
+
+        <div class="game-container">
+
+
+            <!-- ======================================
+                 BACK
+            ======================================= -->
+
+            <a
+                href="games.html"
+                class="game-back"
+            >
+                ← Back to Games
+            </a>
+
+
+
+            <!-- ======================================
+                 GAME HEADER
+            ======================================= -->
+
+            <section
+                class="game-header"
+                id="gameHeader"
+            >
+
+                <div class="game-header-loading">
+                    Loading game...
+                </div>
+
+            </section>
+
+
+
+            <!-- ======================================
+                 PRODUCTS HEADER
+            ======================================= -->
+
+            <section class="products-section">
+
+                <div class="products-heading">
+
+                    <div>
+
+                        <span class="page-label">
+                            PROJOYSTICK MARKETPLACE
+                        </span>
+
+                        <h2>
+                            Available Products
+                        </h2>
+
+                        <p>
+                            Choose a product and add it
+                            to your cart.
+                        </p>
+
+                    </div>
+
+
+                    <div class="products-count">
+                        <span id="productsCount">
+                            0
+                        </span>
+                        Products
+                    </div>
+
+
+                    <a
+                        id="shopGameLink"
+                        class="shop-game-link"
+                        href="shop.html"
+                    >
+                        See More →
+                    </a>
+
+                </div>
+
+
+
+                <!-- ==================================
+                     PRODUCTS GRID
+                =================================== -->
+
+                <div
+                    class="products-grid"
+                    id="productsGrid"
+                >
+
+                    <div class="products-loading">
+                        Loading products...
+                    </div>
+
+                </div>
+
+
+
+                <!-- ==================================
+                     EMPTY STATE
+                =================================== -->
+
+                <div
+                    class="products-empty"
+                    id="productsEmpty"
+                >
+
+                    <div class="empty-icon">
+                        🛒
+                    </div>
+
+                    <h3>
+                        No products available
+                    </h3>
+
+                    <p>
+                        There are currently no
+                        products available for this game.
+                    </p>
+
+                </div>
+
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+    =========================================== -->
+
+    <script
+        type="module"
+        src="../js/script.js"
+    ></script>
+
+
+    <script
+        type="module"
+        src="../js/game.js"
+    ></script>
+
+
+</body>
+
+</html>

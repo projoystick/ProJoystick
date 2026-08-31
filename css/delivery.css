@@ -1,0 +1,382 @@
+/* ==========================================
+   GAMEVAULT - DELIVERY PAGE
+========================================== */
+
+.delivery-page {
+    min-height: calc(100vh - 65px);
+
+    padding: 55px 20px 90px;
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(168, 255, 62, 0.05),
+            transparent 35%
+        ),
+        #0b0d12;
+
+    color: #fff;
+}
+
+
+.delivery-container {
+    width: min(700px, 100%);
+    margin: 0 auto;
+}
+
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.delivery-header {
+    margin-bottom: 30px;
+}
+
+
+.delivery-header > span {
+    color: var(--accent);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 2px;
+}
+
+
+.delivery-header h1 {
+    margin: 8px 0 8px;
+
+    color: #fff;
+
+    font-family: "Orbitron", sans-serif;
+
+    font-size: 30px;
+}
+
+
+.delivery-header p {
+    margin: 0;
+
+    color: #7d8490;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================
+   GAME BOX
+========================================== */
+
+.delivery-games {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+
+.delivery-game-box {
+    padding: 22px;
+
+    border: 1px solid #272b34;
+    border-radius: 12px;
+
+    background: #11141b;
+}
+
+
+.delivery-game-header {
+    margin-bottom: 20px;
+}
+
+
+.delivery-game-header span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #727987;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    letter-spacing: 1.2px;
+
+    text-transform: uppercase;
+}
+
+
+.delivery-game-header h2 {
+    margin: 0;
+
+    color: #fff;
+
+    font-size: 18px;
+}
+
+
+/* ==========================================
+   FIELD
+========================================== */
+
+.delivery-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    margin-bottom: 16px;
+}
+
+
+.delivery-field:last-child {
+    margin-bottom: 0;
+}
+
+
+.delivery-field label {
+    color: #cdd1d9;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+.delivery-field label span {
+    color: #ff6b75;
+}
+
+
+.delivery-field input,
+.delivery-field select {
+    width: 100%;
+    box-sizing: border-box;
+
+    min-height: 44px;
+
+    padding: 0 12px;
+
+    border: 1px solid #2a2f39;
+    border-radius: 8px;
+
+    outline: none;
+
+    background: #181c24;
+    color: #fff;
+
+    font-family: inherit;
+    font-size: 12px;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+
+.delivery-field input:focus,
+.delivery-field select:focus {
+    border-color: var(--accent);
+
+    box-shadow:
+        0 0 0 2px rgba(
+            168,
+            255,
+            62,
+            0.08
+        );
+}
+
+
+.delivery-field input::placeholder {
+    color: #5f6672;
+}
+
+
+/* ==========================================
+   WARNING
+========================================== */
+
+.delivery-warning {
+    margin-top: 18px;
+
+    padding: 14px 16px;
+
+    border: 1px solid rgba(255, 193, 7, 0.20);
+    border-radius: 8px;
+
+    background: rgba(255, 193, 7, 0.06);
+}
+
+
+.delivery-warning strong {
+    color: #f0c85a;
+
+    font-size: 11px;
+}
+
+
+.delivery-warning p {
+    margin: 5px 0 0;
+
+    color: #878d98;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+
+/* ==========================================
+   SUBMIT
+========================================== */
+
+.delivery-submit {
+    width: 100%;
+
+    min-height: 48px;
+
+    margin-top: 18px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: var(--accent);
+    color: #08090d;
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        transform .1s ease;
+}
+
+
+.delivery-submit:hover {
+    background: #baff62;
+}
+
+
+.delivery-submit:active {
+    transform: translateY(1px);
+}
+
+
+.delivery-submit:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   EMPTY
+========================================== */
+
+.delivery-empty {
+    padding: 30px;
+
+    border: 1px solid #292d36;
+    border-radius: 10px;
+
+    background: #11141b;
+
+    color: #818792;
+
+    text-align: center;
+    font-size: 13px;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+
+    .delivery-page {
+        padding: 35px 14px 60px;
+    }
+
+    .delivery-header h1 {
+        font-size: 25px;
+    }
+
+    .delivery-game-box {
+        padding: 18px;
+    }
+
+}
+
+/* ==========================================
+   PRODUCT BOX (CONDITIONAL DELIVERY)
+========================================== */
+
+.delivery-product-box {
+    padding: 22px;
+    border: 2px solid rgba(168, 255, 62, 0.24);
+    border-radius: 12px;
+    background: rgba(168, 255, 62, 0.03);
+}
+
+.delivery-product-header {
+    margin-bottom: 20px;
+}
+
+.delivery-product-header span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.delivery-product-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+    font-family: inherit;
+}
+
+.conditional-fields-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.conditional-delivery-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 6px;
+    background: #10141b;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.conditional-delivery-select:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.conditional-delivery-select option {
+    background: #0b0d12;
+    color: #fff;
+}
+
+@media (max-width: 600px) {
+    .delivery-product-box {
+        padding: 18px;
+    }
+    .delivery-product-header h2 {
+        font-size: 16px;
+    }
+}
+

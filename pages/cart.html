@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Cart — PROJOYSTICK</title>
+
+    <meta
+        name="description"
+        content="Review your PROJOYSTICK shopping cart."
+    >
+
+    <!-- IMPORTANT:
+         cart.html is inside /pages,
+         so the stylesheet is one level up.
+    -->
+
+    <link
+        rel="stylesheet"
+        href="../style.css"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        /* ==========================================
+           CART PAGE
+        ========================================== */
+
+        .cart-page {
+            min-height: 70vh;
+            padding: 140px 24px 80px;
+        }
+
+        .cart-container {
+            width: min(1100px, 100%);
+            margin: 0 auto;
+        }
+
+        .cart-page-header {
+            margin-bottom: 35px;
+        }
+
+        .cart-page-header .section-label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .cart-page-header h1 {
+            margin: 0;
+        }
+
+        .cart-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 28px;
+            align-items: start;
+        }
+
+        .cart-items-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .cart-page-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 14px;
+            background: rgba(255,255,255,.03);
+        }
+
+        .cart-page-item-info {
+            min-width: 0;
+        }
+
+        .cart-page-item-info h3 {
+            margin: 0 0 7px;
+        }
+
+        .cart-page-item-game {
+            display: block;
+            opacity: .65;
+            font-size: 14px;
+        }
+
+        .cart-page-item-amount {
+            display: block;
+            margin-top: 6px;
+            font-size: 13px;
+            opacity: .55;
+        }
+
+        .cart-page-item-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-shrink: 0;
+        }
+
+        .cart-quantity-control {
+            display: inline-flex;
+            align-items: center;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 8px;
+        }
+
+        .cart-quantity-control button {
+            width: 30px;
+            height: 32px;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .cart-quantity-control button:hover {
+            background: rgba(255,255,255,.08);
+        }
+
+        .cart-quantity-control input {
+            width: 36px;
+            height: 32px;
+            border: 0;
+            border-right: 1px solid rgba(255,255,255,.12);
+            border-left: 1px solid rgba(255,255,255,.12);
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            text-align: center;
+        }
+
+        .cart-quantity-control input::-webkit-inner-spin-button,
+        .cart-quantity-control input::-webkit-outer-spin-button {
+            margin: 0;
+        }
+
+        .cart-page-item-price {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .cart-remove-btn {
+            width: 34px;
+            height: 34px;
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 8px;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .cart-remove-btn:hover {
+            background: rgba(255,255,255,.08);
+        }
+
+        .cart-summary {
+            position: sticky;
+            top: 110px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 16px;
+            background: rgba(255,255,255,.04);
+        }
+
+        .cart-summary h2 {
+            margin-top: 0;
+            margin-bottom: 22px;
+        }
+
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 14px;
+        }
+
+        .cart-summary-total {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,.1);
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .cart-checkout-btn {
+            width: 100%;
+            margin-top: 24px;
+            padding: 14px 18px;
+            border: 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .cart-continue-btn {
+            display: block;
+            margin-top: 14px;
+            text-align: center;
+            opacity: .7;
+        }
+
+        .cart-empty {
+            padding: 70px 20px;
+            text-align: center;
+            border: 1px dashed rgba(255,255,255,.12);
+            border-radius: 16px;
+        }
+
+        .cart-empty h2 {
+            margin-bottom: 10px;
+        }
+
+        .cart-empty p {
+            opacity: .65;
+            margin-bottom: 25px;
+        }
+
+        .cart-empty-btn {
+            display: inline-block;
+        }
+
+        .cart-notification {
+            position: fixed;
+            right: 25px;
+            bottom: 25px;
+            z-index: 99999;
+            padding: 13px 18px;
+            border-radius: 10px;
+            background: #151515;
+            border: 1px solid rgba(255,255,255,.1);
+            box-shadow: 0 10px 35px rgba(0,0,0,.35);
+        }
+
+        @media (max-width: 800px) {
+
+            .cart-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-summary {
+                position: static;
+            }
+
+        }
+
+        @media (max-width: 550px) {
+
+            .cart-page {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .cart-page-item {
+                align-items: flex-start;
+            }
+
+            .cart-page-item-right {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 10px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================
+         NAVBAR
+    ========================================== -->
+
+    <header class="navbar">
+
+        <div class="nav-container">
+
+
+            <a
+                href="../index.html"
+                class="logo"
+            >
+
+                <span class="logo-icon">
+                    ◆
+                </span>
+
+                PRO<span>JOYSTICK</span>
+
+            </a>
+
+
+            <nav class="nav-links">
+
+                <a href="../index.html">
+                    Home
+                </a>
+
+                <a href="games.html">
+                    Games
+                </a>
+
+                <a href="shop.html">
+                    Shop
+                </a>
+
+                <a href="../index.html#deals">
+                    Deals
+                </a>
+
+            </nav>
+
+
+            <div class="nav-actions">
+
+                <button
+                    class="search-btn"
+                    aria-label="Search"
+                    type="button"
+                >
+                    <span>⌕</span>
+                </button>
+
+
+                <a
+                    href="cart.html"
+                    class="cart-btn"
+                    aria-label="Shopping cart"
+                >
+
+                    <span class="cart-icon">
+                        🛒
+                    </span>
+
+                    <span class="cart-count">
+                        0
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="login.html"
+                    class="login-btn"
+                >
+                    Login
+                </a>
+
+
+                <a
+                    href="register.html"
+                    class="signup-btn"
+                >
+                    Sign Up
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =========================================
+         CART
+    ========================================== -->
+
+    <main class="cart-page">
+
+        <div class="cart-container">
+
+
+            <div class="cart-page-header">
+
+                <span class="section-label">
+                    PROJOYSTICK SHOP
+                </span>
+
+                <h1>
+                    Your Cart
+                </h1>
+
+            </div>
+
+
+            <!-- =====================================
+                 CART CONTENT
+            ====================================== -->
+
+            <div id="cartContent">
+
+                <!-- Filled by cart.js -->
+
+            </div>
+
+
+        </div>
+
+    </main>
+
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+
+    <footer class="footer">
+
+        <div class="footer-container">
+
+
+            <div class="footer-brand">
+
+                <a
+                    href="../index.html"
+                    class="logo"
+                >
+
+                    <span class="logo-icon">
+                        ◆
+                    </span>
+
+                    PRO<span>JOYSTICK</span>
+
+                </a>
+
+                <p>
+                    Your destination for digital
+                    gaming products, currency
+                    and more.
+                </p>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Marketplace
+                </h4>
+
+                <a href="games.html">
+                    Games
+                </a>
+
+                <a href="shop.html">
+                    Currency
+                </a>
+
+                <a href="shop.html">
+                    Items
+                </a>
+
+                <a href="../index.html#deals">
+                    Deals
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Account
+                </h4>
+
+                <a href="login.html">
+                    Login
+                </a>
+
+                <a href="register.html">
+                    Register
+                </a>
+
+                <a href="orders.html">
+                    Orders
+                </a>
+
+                <a href="#">
+                    Wishlist
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Support
+                </h4>
+
+                <a href="#">
+                    Help Center
+                </a>
+
+                <a href="#">
+                    Contact Us
+                </a>
+
+                <a href="#">
+                    Refund Policy
+                </a>
+
+                <a href="#">
+                    Terms
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <p>
+                © 2026 PROJOYSTICK.
+                All rights reserved.
+            </p>
+
+            <div class="social-links">
+
+                <a href="#">
+                    Discord
+                </a>
+
+                <a href="#">
+                    X
+                </a>
+
+                <a href="#">
+                    Instagram
+                </a>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script
+        type="module"
+        src="../js/script.js"
+    ></script>
+
+    <script
+        type="module"
+        src="../js/cart.js"
+    ></script>
+
+
+</body>
+
+</html>

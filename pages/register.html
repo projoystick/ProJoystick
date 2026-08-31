@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Account — PROJOYSTICK</title>
+
+    <link rel="stylesheet" href="../css/auth.css">
+
+</head>
+
+
+<body>
+
+    <main class="auth-page">
+
+        <section class="auth-container">
+
+            <!-- BRAND -->
+
+            <a href="../index.html" class="auth-logo">
+                <span>◆</span>
+                PRO<span>JOYSTICK</span>
+            </a>
+
+
+            <!-- CARD -->
+
+            <div class="auth-card">
+
+                <div class="auth-header">
+
+                    <span class="auth-label">
+                        JOIN PROJOYSTICK
+                    </span>
+
+                    <h1>
+                        Create your account
+                    </h1>
+
+                    <p>
+                        Start buying and managing your gaming items.
+                    </p>
+
+                </div>
+
+
+                <!-- MESSAGE -->
+
+                <div
+                    id="authMessage"
+                    class="auth-message"
+                ></div>
+
+
+                <!-- FORM -->
+
+                <form id="registerForm">
+
+                    <div class="form-group">
+
+                        <label for="username">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Choose a username"
+                            autocomplete="username"
+                            minlength="3"
+                            maxlength="20"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="you@example.com"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <div class="password-input">
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Create a password"
+                                autocomplete="new-password"
+                                minlength="6"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="show-password"
+                                data-target="password"
+                            >
+                                Show
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="confirmPassword">
+                            Confirm Password
+                        </label>
+
+                        <div class="password-input">
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                placeholder="Confirm your password"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="show-password"
+                                data-target="confirmPassword"
+                            >
+                                Show
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <label class="terms">
+
+                        <input
+                            type="checkbox"
+                            id="terms"
+                            required
+                        >
+
+                        <span>
+                            I agree to the
+                            <a href="#">
+                                Terms of Service
+                            </a>
+                            and
+                            <a href="#">
+                                Privacy Policy
+                            </a>.
+                        </span>
+
+                    </label>
+
+
+                    <button
+                        type="submit"
+                        class="auth-submit"
+                        id="registerButton"
+                    >
+                        Create Account
+                    </button>
+
+                </form>
+
+
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+
+
+                <!-- GOOGLE -->
+
+                <button
+                    type="button"
+                    class="google-btn"
+                    id="googleRegister"
+                >
+                    <span class="google-icon">G</span>
+                    Continue with Google
+                </button>
+
+
+                <!-- LOGIN -->
+
+                <p class="auth-switch">
+
+                    Already have an account?
+
+                    <a href="login.html">
+                        Login
+                    </a>
+
+                </p>
+
+            </div>
+
+
+            <a href="../index.html" class="back-home">
+                ← Back to PROJOYSTICK
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <script type="module" src="../js/auth.js"></script>
+
+</body>
+
+</html>

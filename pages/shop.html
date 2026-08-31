@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Shop — PROJOYSTICK</title>
+
+    <link rel="stylesheet" href="../style.css">
+
+    <link rel="stylesheet" href="../css/shop.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- ==========================================
+         NAVBAR
+    =========================================== -->
+
+    <header class="navbar">
+
+        <div class="nav-container">
+
+            <nav class="nav-links">
+
+                <a href="../index.html">
+                    Home
+                </a>
+
+                <a href="games.html">
+                    Games
+                </a>
+
+                <a
+                    href="shop.html"
+                    class="active"
+                >
+                    Shop
+                </a>
+
+            </nav>
+
+
+            <div class="nav-actions">
+
+                <button
+                    class="search-btn"
+                    type="button"
+                    aria-label="Search"
+                >
+                    🔍
+                </button>
+
+
+                <button
+                    class="cart-btn"
+                    type="button"
+                    aria-label="Cart"
+                >
+
+                    🛒
+
+                    <span class="cart-count">
+                        0
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- ==========================================
+         SHOP PAGE
+    =========================================== -->
+
+    <main class="shop-page">
+
+        <div class="shop-container">
+
+
+            <!-- ======================================
+                 SHOP HEADER
+            ======================================= -->
+
+            <section class="shop-header">
+
+                <div class="shop-header-content">
+
+                    <span class="page-label">
+                        PROJOYSTICK MARKETPLACE
+                    </span>
+
+
+                    <h1>
+                        Everything You Need
+                    </h1>
+
+
+                    <p>
+                        Browse game currencies,
+                        items and special deals
+                        across PROJOYSTICK.
+                    </p>
+
+                </div>
+
+
+                <!-- SEARCH -->
+
+                <div class="shop-search">
+
+                    <span aria-hidden="true">
+                        🔍
+                    </span>
+
+                    <input
+                        type="text"
+                        id="shopSearch"
+                        placeholder="Search products..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+            </section>
+
+
+
+            <!-- ======================================
+                 CATEGORY NAVIGATION
+            ======================================= -->
+
+            <section
+                class="shop-categories"
+                id="shopCategories"
+                aria-label="Shop categories"
+            >
+
+                <!--
+
+                    shop.js will generate:
+
+                    ALL PRODUCTS
+                    game categories
+                    DEALS
+
+                -->
+
+                <button
+                    type="button"
+                    class="shop-category-btn active"
+                    data-category="all"
+                >
+                    All Products
+                </button>
+
+            </section>
+
+
+
+            <!-- ======================================
+                 SHOP CONTENT
+            ======================================= -->
+
+            <div
+                id="shopContent"
+                class="shop-content"
+            >
+
+
+                <!-- ==================================
+                     ALL PRODUCTS
+                =================================== -->
+
+                <section
+                    class="shop-main-section"
+                    id="allProductsSection"
+                    data-shop-section="all"
+                >
+
+                    <div class="shop-section-header">
+
+                        <div>
+
+                            <span class="shop-section-label">
+                                MARKETPLACE
+                            </span>
+
+                            <h2>
+                                All Products
+                            </h2>
+
+                        </div>
+
+
+                        <span
+                            class="shop-section-count"
+                            id="allProductsCount"
+                        >
+                            0 Products
+                        </span>
+
+                    </div>
+
+
+                    <!-- CURRENCY -->
+
+                    <div class="shop-product-category">
+
+                        <div class="shop-subsection-header">
+
+                            <h3>
+                                Currency
+                            </h3>
+
+                            <span
+                                id="allCurrencyCount"
+                            >
+                                0
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="shop-product-grid"
+                            id="allCurrencyGrid"
+                        >
+
+                            <div class="shop-loading">
+                                Loading products...
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- ITEMS -->
+
+                    <div class="shop-product-category">
+
+                        <div class="shop-subsection-header">
+
+                            <h3>
+                                Items
+                            </h3>
+
+                            <span
+                                id="allItemsCount"
+                            >
+                                0
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="shop-product-grid"
+                            id="allItemsGrid"
+                        >
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- ==================================
+                     GAME SECTIONS
+                     Generated by shop.js
+                =================================== -->
+
+                <div
+                    id="gameSections"
+                    class="game-sections"
+                >
+
+                </div>
+
+
+
+                <!-- ==================================
+                     DEALS
+                =================================== -->
+
+                <section
+                    class="shop-main-section deals-section"
+                    id="dealsSection"
+                    data-shop-section="deals"
+                >
+
+                    <div class="shop-section-header">
+
+                        <div>
+
+                            <span class="shop-section-label">
+                                SPECIAL OFFERS
+                            </span>
+
+                            <h2>
+                                Deals
+                            </h2>
+
+                        </div>
+
+
+                        <span
+                            class="shop-section-count"
+                            id="dealsCount"
+                        >
+                            0 Products
+                        </span>
+
+                    </div>
+
+
+                    <!--
+                        Deals will be grouped by game
+                        by shop.js.
+                    -->
+
+                    <div
+                        id="dealGameSections"
+                        class="deal-game-sections"
+                    >
+
+                    </div>
+
+                </section>
+
+
+            </div>
+
+
+
+            <!-- ======================================
+                 EMPTY SHOP
+            ======================================= -->
+
+            <section
+                class="shop-empty"
+                id="shopEmpty"
+            >
+
+                <div class="shop-empty-icon">
+                    🔍
+                </div>
+
+
+                <h2>
+                    No Products Found
+                </h2>
+
+
+                <p>
+                    Try another search or category.
+                </p>
+
+            </section>
+
+
+
+            <!-- ======================================
+                 ERROR
+            ======================================= -->
+
+            <section
+                class="shop-error"
+                id="shopError"
+            >
+
+                <h2>
+                    Unable to Load Shop
+                </h2>
+
+
+                <p>
+                    Something went wrong while
+                    loading the marketplace.
+                </p>
+
+
+                <button
+                    type="button"
+                    id="shopRetryBtn"
+                    class="shop-retry-btn"
+                >
+                    Try Again
+                </button>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+    =========================================== -->
+
+    <script
+        type="module"
+        src="../js/script.js"
+    ></script>
+
+
+    <script
+        type="module"
+        src="../js/shop.js"
+    ></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Payment — PROJOYSTICK</title>
+
+    <link
+        rel="stylesheet"
+        href="../style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/payment.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- ==========================================
+         NAVBAR
+    =========================================== -->
+
+    <header class="navbar">
+
+        <div class="nav-container">
+
+            <a
+                href="../index.html"
+                class="logo"
+            >
+                PROJOYSTICK
+            </a>
+
+
+            <div class="nav-actions">
+
+                <a
+                    href="cart.html"
+                    class="cart-btn"
+                >
+                    Cart
+
+                    <span class="cart-count">
+                        0
+                    </span>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ==========================================
+         PAYMENT PAGE
+    =========================================== -->
+
+    <main class="payment-page">
+
+        <div
+            class="payment-container"
+            id="paymentContainer"
+        >
+
+
+            <!-- ======================================
+                 LOADING
+            ======================================= -->
+
+            <section
+                class="payment-state"
+                id="paymentLoading"
+            >
+
+                <div class="payment-spinner"></div>
+
+                <h1>
+                    Preparing Payment
+                </h1>
+
+                <p>
+                    Please wait while we prepare your order.
+                </p>
+
+            </section>
+
+
+            <!-- ======================================
+                 PAYMENT
+            ======================================= -->
+
+            <section
+                class="payment-section hidden"
+                id="paymentSection"
+            >
+
+                <!-- ==================================
+                     PAYMENT HEADER
+                =================================== -->
+
+                <div class="payment-header">
+
+                    <span class="payment-label">
+                        PROJOYSTICK PAYMENT
+                    </span>
+
+                    <h1>
+                        Complete Your Payment
+                    </h1>
+
+                    <p>
+                        Scan the QR code or use the UPI ID below
+                        to complete your payment.
+                    </p>
+
+                </div>
+
+
+                <!-- ==================================
+                     ORDER SUMMARY
+                =================================== -->
+
+                <div class="payment-order-card">
+
+                    <div>
+
+                        <span>
+                            Order ID
+                        </span>
+
+                        <strong id="paymentOrderId">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Items
+                        </span>
+
+                        <strong id="paymentItemCount">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Amount
+                        </span>
+
+                        <strong id="paymentTotal">
+                            ₹0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================
+                     QR PAYMENT
+                =================================== -->
+
+                <div class="payment-card">
+
+
+                    <!-- QR TEXT -->
+
+                    <div class="payment-card-content">
+
+                        <span class="payment-card-label">
+                            SCAN & PAY
+                        </span>
+
+                        <h2>
+                            Pay using UPI
+                        </h2>
+
+                        <p class="payment-instruction">
+                            Open your UPI app and scan the QR code
+                            to make the payment.
+                        </p>
+
+                    </div>
+
+
+                    <!-- ==================================
+                         QR IMAGE - SEPARATE BOX
+                    =================================== -->
+
+                    <div class="payment-qr-wrapper">
+
+                        <img
+                            src="../images/scan.jpg"
+                            alt="PROJOYSTICK UPI QR Code"
+                            id="paymentQR"
+                        >
+
+                    </div>
+
+
+                    <!-- ==================================
+                         UPI ID
+                    =================================== -->
+
+                    <div class="upi-box">
+
+                        <div class="upi-info">
+
+                            <span>
+                                UPI ID
+                            </span>
+
+                            <strong id="upiId">
+                                YOUR-UPI-ID@upi
+                            </strong>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            id="copyUpiBtn"
+                        >
+                            COPY
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================
+                     PAYMENT STATUS
+                =================================== -->
+
+                <div
+                    class="payment-status-card"
+                    id="paymentStatusCard"
+                >
+
+                    <div class="payment-status-spinner"></div>
+
+                    <div class="payment-status-content">
+
+                        <strong>
+                            Waiting for payment confirmation
+                        </strong>
+
+                        <p>
+                            Complete your payment.
+                            We are checking your payment status.
+                        </p>
+
+                    </div>
+
+                    <div
+                        class="payment-timer"
+                        id="paymentTimer"
+                    >
+                        02:00
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================
+                     WARNING
+                =================================== -->
+
+                <p class="payment-warning">
+                    Do not close this page while your payment
+                    is being processed.
+                </p>
+
+            </section>
+
+
+            <!-- ======================================
+                 PAYMENT SUCCESS
+            ======================================= -->
+
+            <section
+                class="payment-state payment-success hidden"
+                id="paymentSuccess"
+            >
+
+                <div class="payment-success-icon">
+                    ✓
+                </div>
+
+                <span class="payment-label">
+                    PAYMENT VERIFIED
+                </span>
+
+                <h1>
+                    Order Completed
+                </h1>
+
+                <p>
+                    Your payment has been successfully verified.
+                </p>
+
+                <div class="success-order-info">
+
+                    <span>
+                        Order ID
+                    </span>
+
+                    <strong id="successOrderId">
+                        —
+                    </strong>
+
+                </div>
+
+                <div class="success-order-info">
+
+                    <span>
+                        Amount
+                    </span>
+
+                    <strong id="successOrderTotal">
+                        ₹0
+                    </strong>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="primary-btn"
+                    id="viewOrderBtn"
+                >
+                    View Order →
+                </button>
+
+            </section>
+
+
+            <!-- ======================================
+                 REDIRECTING
+            ======================================= -->
+
+            <section
+                class="payment-state hidden"
+                id="paymentRedirecting"
+            >
+
+                <div class="payment-spinner"></div>
+
+                <h1>
+                    Payment Verification Taking Longer
+                </h1>
+
+                <p>
+                    Your order has been saved.
+                    Verification is taking a little longer.
+                </p>
+
+                <p>
+                    Redirecting you to My Orders...
+                </p>
+
+            </section>
+
+
+            <!-- ======================================
+                 ERROR
+            ======================================= -->
+
+            <section
+                class="payment-state payment-error hidden"
+                id="paymentError"
+            >
+
+                <div class="payment-error-icon">
+                    !
+                </div>
+
+                <h1>
+                    Something Went Wrong
+                </h1>
+
+                <p id="paymentErrorMessage">
+                    We were unable to prepare your payment.
+                </p>
+
+                <button
+                    type="button"
+                    class="primary-btn"
+                    id="paymentErrorBackBtn"
+                >
+                    Back to Cart
+                </button>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <script
+        type="module"
+        src="../js/payment.js"
+    ></script>
+
+</body>
+
+</html>
