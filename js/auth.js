@@ -44,6 +44,37 @@ const registerForm =
 const authMessage =
     document.getElementById("authMessage");
 
+document
+    .querySelectorAll(".show-password")
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const input =
+                        document.getElementById(
+                            button.dataset.target
+                        );
+
+                    if (!input) {
+                        return;
+                    }
+
+                    const isHidden =
+                        input.type === "password";
+
+                    input.type =
+                        isHidden ? "text" : "password";
+
+                    button.textContent =
+                        isHidden ? "Hide" : "Show";
+                }
+            );
+        }
+    );
+
 
 /* ==========================================
    SHOW MESSAGE
