@@ -158,10 +158,6 @@ function showVerificationForm() {
             "none";
     }
 
-    if (verificationSuccess) {
-        verificationSuccess.style.display =
-            "none";
-    }
 
     if (verificationInvalid) {
         verificationInvalid.style.display =
@@ -255,7 +251,7 @@ function showInvalidLink() {
             "block";
     }
 
-    
+
 }
 
 
@@ -356,7 +352,10 @@ async function sendVerificationEmail(
         showWaiting();
 
 
-        
+        showMessage(
+            "Verification email sent. Check your inbox.",
+            "success"
+        );
 
 
         console.log(
