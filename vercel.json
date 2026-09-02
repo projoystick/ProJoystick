@@ -1,21 +1,77 @@
 {
   "rewrites": [
     {
-      "source": "/shop",
-      "destination": "/shop.html"
+      "source": "/home",
+      "destination": "/index.html"
     },
     {
-      "source": "/payment",
-      "destination": "/payment.html"
+      "source": "/cart",
+      "destination": "/cart.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/checkout.html"
+    },
+    {
+      "source": "/delivery",
+      "destination": "/delivery.html"
+    },
+    {
+      "source": "/email-verification",
+      "destination": "/email-verification.html"
+    },
+    {
+      "source": "/game",
+      "destination": "/game.html"
+    },
+    {
+      "source": "/games",
+      "destination": "/games.html"
     },
     {
       "source": "/login",
       "destination": "/login.html"
     },
     {
+      "source": "/orders",
+      "destination": "/orders.html"
+    },
+    {
+      "source": "/password-recovery",
+      "destination": "/password-recovery.html"
+    },
+    {
+      "source": "/password-verification",
+      "destination": "/password-verification.html"
+    },
+    {
+      "source": "/payment",
+      "destination": "/payment.html"
+    },
+    {
+      "source": "/product",
+      "destination": "/product.html"
+    },
+    {
       "source": "/profile",
       "destination": "/profile.html"
-    }
+    },
+    {
+      "source": "/register",
+      "destination": "/register.html"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/reset-password.html"
+    },
+    {
+      "source": "/shop",
+      "destination": "/shop.html"
+    },
+    {
+      "source": "/wishlist",
+      "destination": "/wishlist.html"
+    } 
   ],
   "cleanUrls": true
 }
