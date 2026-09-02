@@ -255,10 +255,7 @@ function showInvalidLink() {
             "block";
     }
 
-    showMessage(
-        "This verification link is invalid or has expired."
-    );
-
+    
 }
 
 
@@ -359,10 +356,7 @@ async function sendVerificationEmail(
         showWaiting();
 
 
-        showMessage(
-            "Verification email sent. Check your inbox.",
-            "success"
-        );
+        
 
 
         console.log(
