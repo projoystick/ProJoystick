@@ -54,7 +54,7 @@
 
     color: var(--accent);
 
-    font-size: 8px;
+    font-size: 12px;
     font-weight: 800;
 
     letter-spacing: 2px;
@@ -214,6 +214,8 @@
     font-weight: 600;
 
     cursor: pointer;
+
+    margin-top: 2px;
 
     transition:
         color 0.2s ease,
@@ -1246,16 +1248,26 @@
     .shop-page {
         padding:
             40px 15px 70px;
+
+
     }
 
+    .shop-header-content h1,
+    .shop-header-content p {
+        display: none;
+    }
 
-    .shop-header h1 {
-        font-size: 27px;
+    .page-label {
+        margin-top: 10px;
+        font-family: 'Your-New-Font', sans-serif; 
+        font-size: 14px !important;                           
+        font-weight: 700px !important;                       
     }
 
 
     .shop-categories {
         margin-bottom: 30px;
+        margin-top: 2px;
     }
 
 

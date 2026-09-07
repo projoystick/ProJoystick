@@ -380,3 +380,78 @@
     }
 }
 
+/* ==========================================
+   CART BUTTON
+========================================== */
+
+.nav-actions-del {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 1. FIXED: Changed .cart-button-del to .cart-btn-del to match your HTML */
+.cart-btn-del {
+    position: relative;
+
+    width: 38px;
+    height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    background: #11131a;
+    color: var(--text);
+
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.cart-btn-del:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    background: #151820;
+}
+
+.cart-count-del {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+
+    min-width: 17px;
+    height: 17px;
+    padding-inline: 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 999px;
+
+    background: var(--accent);
+    color: #08090d;
+
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* 2. FIXED: Changed .cart-icon to .cart-icon-del to match your HTML */
+.cart-icon-del {
+    font-size: 15px;
+    line-height: 1;
+}
+
+@media (max-width: 430px) {
+    .cart-btn-del {
+        width: 34px;
+        height: 34px;
+    }
+}

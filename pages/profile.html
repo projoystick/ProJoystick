@@ -16,66 +16,197 @@
 
     <link rel="stylesheet" href="../css/profile.css">
 
+    <link rel="icon" href="../images/webicon.png">
+
 </head>
 
 
 <body>
 
 
-    <!-- ==========================================
+    <!-- =========================================
          NAVBAR
-    =========================================== -->
+    ========================================== -->
 
     <header class="navbar">
 
         <div class="nav-container">
 
-            <a href="../index.html" class="logo">
-                <span>◆</span>
-                GAME<span>VAULT</span>
-            </a>
 
+            <!-- =========================================
+                 MENU + LOGO
+            ========================================== -->
+            <div class="brand-area">
 
-            <nav class="nav-links">
+                <!-- HAMBURGER BUTTON -->
+                <button
+                    type="button"
+                    class="menu-btn"
+                    id="menuBtn"
+                    aria-label="Open menu"
+                    aria-expanded="false"
+                >
+                    ☰
+                </button>
+
+                <!-- LOGO -->
+                <a
+                    href="../index.html"
+                    class="logo"
+                >
+                    <img src="/images/webicon.png" alt="Pro Joystick"class="logo-icon"
+                    >
+
+                    <span class="logo-text"> 
+                        <span class="logo-pro">PRO</span> 
+                        <span class="logo-joystick">JOYSTICK</span> 
+                    </span>
+                </a>
+            </div>
+
+            <!-- =========================================
+            NAVBAR DROPDOWN
+            ========================================== -->
+
+            <div
+                class="menu-dropdown"
+                id="menuDropdown"
+                aria-hidden="true"
+            >
 
                 <a href="../index.html">
+                    <span class="span-home">
+                        🏠
+                    </span>
                     Home
                 </a>
 
-                <a href="#">
+                <a href="games.html">
+                    <span>🎮</span>
                     Games
                 </a>
 
-                <a href="#">
-                    Products
+                <a href="shop.html">
+                    <span>🛒</span>
+                    Shop
                 </a>
 
-                <a href="#">
-                    Deals
+                <a href="wishlist.html">
+                    <span>❤️</span>
+                    Wishlist
+                </a>
+
+                <a href="orders.html">
+                    <span>📦</span>
+                    Orders
+                </a>
+            </div>
+
+
+            <!-- =========================================
+                 NAVIGATION
+            ========================================== -->
+
+            <nav class="nav-links">
+
+                <a
+                    href="../index.html"
+                    class="active"
+                >
+                    Home
+                </a>
+
+                <a href="games.html">
+                    Games
+                </a>
+
+                <a href="shop.html">
+                    Shop
+                </a>
+
+                <a href="wishlist.html">
+                    Wishlist
                 </a>
 
             </nav>
 
 
+            <!-- =========================================
+                 NAV ACTIONS
+            ========================================== -->
+
             <div class="nav-actions">
 
-                <button class="search-btn">
-                    🔍
+
+                <!-- SEARCH -->
+
+                <button
+                    class="search-btn"
+                    aria-label="Search"
+                    type="button"
+                >
+
+                    <span>
+                        ⌕
+                    </span>
+
                 </button>
 
-                <button class="cart-btn">
+                <a 
+                    class="coin-btn" 
+                    href="coins.html"
+                    aria-label="Fast Coins"
+                >
+                    <span class="coin-icon">
+                        🪙
+                    </span>
 
-                    🛒
+                    <span class="coin-balance">
+                        0
+                    </span>
+                </a>
+
+                
+
+                <a
+                    href="cart.html"
+                    class="cart-btn"
+                    aria-label="Shopping cart"
+                >
+
+                    <span class="cart-icon">
+                        🛒
+                    </span>
 
                     <span class="cart-count">
                         0
                     </span>
 
-                </button>
+                </a>
 
-                <!-- Auth navbar is generated by script.js -->
+
+                <!-- LOGIN -->
+
+                <a
+                    href="login.html"
+                    class="login-btn"
+                >
+                    Login
+                </a>
+
+
+                <!-- SIGN UP -->
+
+                <a
+                    href="register.html"
+                    class="signup-btn"
+                >
+                    Sign Up
+                </a>
+
 
             </div>
+
 
         </div>
 
@@ -405,7 +536,193 @@
 
     </div>
 
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
 
+    <footer class="footer">
+
+
+        <div class="footer-container">
+
+
+            <!-- BRAND -->
+
+            <div class="footer-brand">
+
+
+                <a
+                    href="index.html"
+                    class="logo"
+                >
+
+                    <img
+                        src="/images/webicon.png"
+                        alt="Pro Joystick"
+                        class="logo-icon"
+                    >
+
+                    PRO<span>JOYSTICK</span>
+
+                </a>
+
+
+                <p>
+
+                    Your destination for digital
+                    gaming products, currency
+                    and more.
+
+                </p>
+
+
+            </div>
+
+
+
+            <!-- MARKETPLACE -->
+
+            <div class="footer-column">
+
+
+                <h4>
+                    Marketplace
+                </h4>
+
+
+                <a href="pages/games.html">
+                    Games
+                </a>
+
+
+                <a href="pages/shop.html">
+                    Currency
+                </a>
+
+
+                <a href="pages/shop.html">
+                    Items
+                </a>
+
+
+                <a href="pages/shop.html?category=deals">
+                    Deals
+                </a>
+
+
+            </div>
+
+
+
+            <!-- ACCOUNT -->
+
+            <div class="footer-column">
+
+
+                <h4>
+                    Account
+                </h4>
+
+
+                <a href="pages/login.html">
+                    Login
+                </a>
+
+
+                <a href="pages/register.html">
+                    Register
+                </a>
+
+
+                <a href="pages/orders.html">
+                    Orders
+                </a>
+
+
+                <a href="pages/wishlist.html">
+                    Wishlist
+                </a>
+
+
+            </div>
+
+
+
+            <!-- SUPPORT -->
+
+            <div class="footer-column">
+
+
+                <h4>
+                    Support
+                </h4>
+
+
+                <a href="mailto:servng8@gmail.com">
+                    Help Center
+                </a>
+
+
+                <a href="mailto:servng8@gmail.com">
+                    Contact Us
+                </a>
+
+
+                <a href="mailto:servng8@gmail.com">
+                    Refund Policy
+                </a>
+
+
+                <a href="#">
+                    Terms
+                </a>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- FOOTER BOTTOM -->
+
+        <div class="footer-bottom">
+
+
+            <p>
+
+                © 2026 PROJOYSTICK.
+                All rights reserved.
+
+            </p>
+
+
+            <div class="social-links">
+
+
+                <a href="#">
+                    Discord
+                </a>
+
+
+                <a href="#">
+                    X
+                </a>
+
+
+                <a href="#">
+                    Instagram
+                </a>
+
+
+            </div>
+
+
+        </div>
+
+
+    </footer>
 
     <script
         type="module"

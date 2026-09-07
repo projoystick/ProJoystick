@@ -167,6 +167,33 @@ function isValidPassword(password) {
 
 
 /* ==========================================
+   COIN SETTINGS
+========================================== */
+
+async function getCoinSettings() {
+
+    const settingsRef =
+        doc(
+            db,
+            "coinSettings",
+            "config"
+        );
+
+    const settingsSnapshot =
+        await getDoc(settingsRef);
+
+    if (!settingsSnapshot.exists()) {
+
+        throw new Error(
+            "Coin settings are not configured."
+        );
+
+    }
+
+    return settingsSnapshot.data();
+}
+
+/* ==========================================
    CREATE USER PROFILE
 ========================================== */
 
@@ -194,6 +221,25 @@ async function createUserProfile(
         return;
     }
 
+
+    /* ----------------------------------
+       GET COIN SETTINGS
+    ---------------------------------- */
+
+    const coinSettings =
+        await getCoinSettings();
+
+
+    const accountCreationCoins =
+        Number(
+            coinSettings.accountCreationCoins
+        ) || 0;
+
+
+    /* ----------------------------------
+       CREATE USER PROFILE
+    ---------------------------------- */
+
     await setDoc(
         userRef,
         {
@@ -209,6 +255,11 @@ async function createUserProfile(
 
             role:
                 "user",
+
+            coins:
+                coinSettings.coinsEnabled
+                    ? accountCreationCoins
+                    : 0,
 
             createdAt:
                 serverTimestamp(),

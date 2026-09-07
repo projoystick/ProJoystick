@@ -40,6 +40,12 @@
         rel="stylesheet"
     >
 
+    <link
+        rel="icon"
+        href="/images/webicon.png"
+        type="image/png"
+    >
+
 </head>
 
 
@@ -55,28 +61,92 @@
         <div class="nav-container">
 
 
-            <!-- LOGO -->
+            <!-- =========================================
+                 MENU + LOGO
+            ========================================== -->
 
-            <a
-                href="index.html"
-                class="logo"
+            <div class="brand-area">
+
+
+                <!-- HAMBURGER BUTTON -->
+
+                <button
+                    type="button"
+                    class="menu-btn"
+                    id="menuBtn"
+                    aria-label="Open menu"
+                    aria-expanded="false"
+                >
+                    ☰
+                </button>
+
+
+                <!-- LOGO -->
+
+                <a
+                    href="#"
+                    class="logo"
+                >
+                    <img
+                        src="/images/webicon.png"
+                        alt="Pro Joystick"
+                        class="logo-icon"
+                    >
+
+                    <span class="logo-text"> 
+                        <span class="logo-pro">PRO</span> 
+                        <span class="logo-joystick">JOYSTICK</span> 
+                    </span>
+                </a>
+            </div>
+
+            <!-- =========================================
+            NAVBAR DROPDOWN
+            ========================================== -->
+
+            <div
+                class="menu-dropdown"
+                id="menuDropdown"
+                aria-hidden="true"
             >
 
-                <span class="logo-icon">
-                    ◆
-                </span>
+                <a href="#">
+                    <span class="span-home">
+                        🏠
+                    </span>
+                    Home
+                </a>
 
-                PRO<span>JOYSTICK</span>
+                <a href="pages/games.html">
+                    <span>🎮</span>
+                    Games
+                </a>
 
-            </a>
+                <a href="pages/shop.html">
+                    <span>🛒</span>
+                    Shop
+                </a>
+
+                <a href="pages/wishlist.html">
+                    <span>❤️</span>
+                    Wishlist
+                </a>
+
+                <a href="pages/orders.html">
+                    <span>📦</span>
+                    Orders
+                </a>
+            </div>
 
 
-            <!-- NAVIGATION -->
+            <!-- =========================================
+                 NAVIGATION
+            ========================================== -->
 
             <nav class="nav-links">
 
                 <a
-                    href="index.html"
+                    href="#"
                     class="active"
                 >
                     Home
@@ -97,10 +167,14 @@
             </nav>
 
 
-            <!-- NAV ACTIONS -->
+            <!-- =========================================
+                 NAV ACTIONS
+            ========================================== -->
 
             <div class="nav-actions">
 
+
+                <!-- SEARCH -->
 
                 <button
                     class="search-btn"
@@ -114,6 +188,21 @@
 
                 </button>
 
+                <a 
+                    class="coin-btn" 
+                    href="pages/coins.html"
+                    aria-label="Fast Coins"
+                >
+                    <span class="coin-icon">
+                        🪙
+                    </span>
+
+                    <span class="coin-balance">
+                        0
+                    </span>
+                </a>
+
+                
 
                 <a
                     href="pages/cart.html"
@@ -132,6 +221,8 @@
                 </a>
 
 
+                <!-- LOGIN -->
+
                 <a
                     href="pages/login.html"
                     class="login-btn"
@@ -140,6 +231,8 @@
                 </a>
 
 
+                <!-- SIGN UP -->
+
                 <a
                     href="pages/register.html"
                     class="signup-btn"
@@ -147,7 +240,9 @@
                     Sign Up
                 </a>
 
+
             </div>
+
 
         </div>
 
@@ -297,11 +392,11 @@
                     </span>
 
                     <small>
-                        INSTANT DELIVERY
+                        INSTANT
                     </small>
 
                     <strong>
-                        FAST
+                        DELIVERY
                     </strong>
 
                 </div>
@@ -720,189 +815,124 @@
     <!-- =========================================
          FOOTER
     ========================================== -->
-
     <footer class="footer">
-
 
         <div class="footer-container">
 
-
             <!-- BRAND -->
-
             <div class="footer-brand">
-
-
                 <a
                     href="index.html"
                     class="logo"
                 >
-
-                    <span class="logo-icon">
-                        ◆
-                    </span>
-
+                    <img
+                        src="/images/webicon.png"
+                        alt="Pro Joystick"
+                        class="logo-icon"
+                    >
                     PRO<span>JOYSTICK</span>
-
                 </a>
 
-
                 <p>
-
                     Your destination for digital
                     gaming products, currency
                     and more.
-
                 </p>
-
-
             </div>
 
-
-
             <!-- MARKETPLACE -->
-
             <div class="footer-column">
-
-
                 <h4>
                     Marketplace
                 </h4>
-
 
                 <a href="pages/games.html">
                     Games
                 </a>
 
-
                 <a href="pages/shop.html">
                     Currency
                 </a>
-
 
                 <a href="pages/shop.html">
                     Items
                 </a>
 
-
                 <a href="pages/shop.html?category=deals">
                     Deals
                 </a>
-
-
             </div>
 
-
-
             <!-- ACCOUNT -->
-
             <div class="footer-column">
-
-
                 <h4>
                     Account
                 </h4>
-
 
                 <a href="pages/login.html">
                     Login
                 </a>
 
-
                 <a href="pages/register.html">
                     Register
                 </a>
-
 
                 <a href="pages/orders.html">
                     Orders
                 </a>
 
-
-                <a href="#">
+                <a href="pages/wishlist.html">
                     Wishlist
                 </a>
-
-
             </div>
 
-
-
             <!-- SUPPORT -->
-
             <div class="footer-column">
-
-
                 <h4>
                     Support
                 </h4>
 
-
-                <a href="#">
+                <a href="mailto:servng8@gmail.com">
                     Help Center
                 </a>
 
-
-                <a href="#">
+                <a href="mailto:servng8@gmail.com">
                     Contact Us
                 </a>
 
-
-                <a href="#">
+                <a href="mailto:servng8@gmail.com">
                     Refund Policy
                 </a>
-
 
                 <a href="#">
                     Terms
                 </a>
-
-
             </div>
-
-
         </div>
 
-
-
         <!-- FOOTER BOTTOM -->
-
         <div class="footer-bottom">
-
-
             <p>
-
                 © 2026 PROJOYSTICK.
                 All rights reserved.
-
             </p>
 
-
             <div class="social-links">
-
-
                 <a href="#">
                     Discord
                 </a>
-
 
                 <a href="#">
                     X
                 </a>
 
-
                 <a href="#">
                     Instagram
                 </a>
 
-
             </div>
-
-
         </div>
-
-
     </footer>
-
 
 
     <!-- =========================================
@@ -924,6 +954,7 @@
         type="module"
         src="js/home.js"
     ></script>
+
 
 </body>
 

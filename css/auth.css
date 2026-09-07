@@ -131,6 +131,12 @@ body {
     letter-spacing: 1px;
 }
 
+.auth-logo .logo-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
 .auth-logo > span:first-child {
     color: var(--accent);
 }

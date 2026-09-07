@@ -6,7 +6,12 @@
    /pages/*.html
 ========================================== */
 
-import { auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 import {
     onAuthStateChanged,
@@ -918,24 +923,23 @@ function updateNavbar(user) {
         return;
     }
 
-
     const searchButton =
         navActions.querySelector(
             ".search-btn"
         );
-
 
     const cartButton =
         navActions.querySelector(
             ".cart-btn"
         );
 
+    const coinButton =
+        navActions.querySelector(
+            ".coin-btn"
+        );
 
-    if (!searchButton ||
-        !cartButton) {
-
+    if (!cartButton) {
         return;
-
     }
 
 
@@ -952,6 +956,10 @@ function updateNavbar(user) {
         navActions.appendChild(
             searchButton
         );
+
+        if (coinButton) {
+        navActions.appendChild(coinButton);
+        }
 
 
         navActions.appendChild(
@@ -1251,6 +1259,10 @@ onAuthStateChanged(
             user
         );
 
+        updateCoinBalance(
+            user
+        );
+
     }
 );
 
@@ -1280,3 +1292,131 @@ window.addEventListener(
 
     }
 );
+
+/* =========================================
+   NAVBAR MENU
+========================================== */
+
+const menuBtn = document.getElementById("menuBtn");
+const menuDropdown = document.getElementById("menuDropdown");
+
+
+if (menuBtn && menuDropdown) {
+
+    menuBtn.addEventListener("click", function (event) {
+
+        event.stopPropagation();
+
+        const isOpen =
+            menuDropdown.classList.toggle("open");
+
+        menuBtn.classList.toggle(
+            "active",
+            isOpen
+        );
+
+        menuBtn.setAttribute(
+            "aria-expanded",
+            isOpen ? "true" : "false"
+        );
+
+        menuDropdown.setAttribute(
+            "aria-hidden",
+            isOpen ? "false" : "true"
+        );
+
+    });
+
+
+    /* CLOSE WHEN CLICKING OUTSIDE */
+
+    document.addEventListener("click", function (event) {
+
+        if (
+            !menuDropdown.contains(event.target) &&
+            !menuBtn.contains(event.target)
+        ) {
+
+            menuDropdown.classList.remove("open");
+
+            menuBtn.classList.remove("active");
+
+            menuBtn.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+
+            menuDropdown.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+        }
+
+    });
+
+
+    /* CLOSE WITH ESC */
+
+    document.addEventListener("keydown", function (event) {
+
+        if (event.key === "Escape") {
+
+            menuDropdown.classList.remove("open");
+
+            menuBtn.classList.remove("active");
+
+            menuBtn.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+
+            menuDropdown.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+        }
+
+    });
+
+}
+
+async function updateCoinBalance(user) {
+
+    const coinBalance = document.querySelector(".coin-balance");
+
+    if (!coinBalance) return;
+
+    if (!user) {
+        coinBalance.textContent = "0";
+        return;
+    }
+
+    try {
+
+        const userRef = doc(db, "users", user.uid);
+        const userSnapshot = await getDoc(userRef);
+
+        if (!userSnapshot.exists()) {
+            coinBalance.textContent = "0";
+            return;
+        }
+
+        const userData = userSnapshot.data();
+
+        const coins = Number(userData.coins) || 0;
+
+        coinBalance.textContent =
+            coins.toLocaleString();
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load coin balance:",
+            error
+        );
+
+        coinBalance.textContent = "0";
+    }
+}

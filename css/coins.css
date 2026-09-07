@@ -1,0 +1,365 @@
+/* ==========================================
+   COINS PAGE
+========================================== */
+
+.coins-page {
+    min-height: calc(100vh - 80px);
+    padding: 60px 20px;
+}
+
+.coins-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.coins-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.coins-icon {
+    width: 54px;
+    height: 54px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    background: var(--surface);
+    font-size: 28px;
+}
+
+.coins-header h1 {
+    margin: 0;
+
+    font-size: 32px;
+    font-weight: 900;
+}
+
+.coins-header p {
+    margin: 6px 0 0;
+
+    color: var(--muted);
+}
+
+
+/* ==========================================
+   BALANCE CARD
+========================================== */
+
+.coins-balance-card {
+    padding: 30px;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    background: var(--surface);
+}
+
+.balance-label {
+    display: block;
+
+    margin-bottom: 12px;
+
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.balance-value {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.balance-value span {
+    font-size: 32px;
+}
+
+.balance-value strong {
+    font-size: 42px;
+    line-height: 1;
+}
+
+.coins-balance-card p {
+    margin: 14px 0 0;
+
+    color: var(--muted);
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   COIN OPTIONS
+========================================== */
+
+.coins-options {
+    margin-top: 40px;
+}
+
+.coins-options h2 {
+    margin: 0 0 18px;
+
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.coins-empty {
+    padding: 45px 25px;
+
+    text-align: center;
+
+    border: 1px dashed var(--border-strong);
+    border-radius: 14px;
+
+    background: var(--surface);
+}
+
+.coins-empty > span {
+    display: block;
+
+    margin-bottom: 12px;
+
+    font-size: 40px;
+}
+
+.coins-empty h3 {
+    margin: 0 0 8px;
+
+    font-size: 18px;
+}
+
+.coins-empty p {
+    max-width: 500px;
+    margin: 0 auto;
+
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+
+    .coins-page {
+        padding: 35px 15px;
+    }
+
+    .coins-header h1 {
+        font-size: 26px;
+    }
+
+    .coins-balance-card {
+        padding: 24px;
+    }
+
+    .balance-value strong {
+        font-size: 36px;
+    }
+
+}
+
+        .coins-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 50px 20px 80px;
+        }
+
+        .coins-header {
+            margin-bottom: 30px;
+        }
+
+        .coins-header h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        .coins-header p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .coin-balance-card {
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: #11131a;
+        }
+
+        .balance-label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .balance-value {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 42px;
+            font-weight: 900;
+        }
+
+        .balance-coin {
+            font-size: 34px;
+        }
+
+        .coins-section {
+            margin-top: 35px;
+        }
+
+        .coins-section h2 {
+            margin-bottom: 16px;
+        }
+
+        .coin-card-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .coin-card {
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: #11131a;
+        }
+
+        .coin-card-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .coin-card h3 {
+            margin: 0 0 8px;
+        }
+
+        .coin-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .redeem-box {
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
+        }
+
+        .redeem-box input {
+            flex: 1;
+            min-width: 0;
+            padding: 13px 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #0d0f14;
+            color: var(--text);
+            outline: none;
+        }
+
+        .redeem-box input:focus {
+            border-color: var(--accent-border);
+        }
+
+        .redeem-btn {
+            padding: 13px 20px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--accent);
+            color: #08090d;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .redeem-btn:hover {
+            opacity: 0.9;
+        }
+
+        .coin-message {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .transaction {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #11131a;
+        }
+
+        .transaction-info strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .transaction-info span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .transaction-amount {
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .transaction-amount.positive {
+            color: #6ee7a8;
+        }
+
+        .transaction-amount.negative {
+            color: #ff7b7b;
+        }
+
+        .login-message {
+            padding: 25px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: #11131a;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .coins-page {
+                padding-top: 30px;
+            }
+
+            .balance-value {
+                font-size: 34px;
+            }
+
+            .redeem-box {
+                flex-direction: column;
+            }
+
+            .transaction {
+                align-items: flex-start;
+            }
+        }
+  

@@ -210,7 +210,9 @@ select {
 }
 
 .nav-container {
+    width: min(var(--container), calc(100% - 40px));
     height: 100%;
+    margin-inline: auto;
 
     display: flex;
     align-items: center;
@@ -219,7 +221,134 @@ select {
 }
 
 
-/* LOGO */
+/* =========================================================
+   BRAND AREA
+========================================================= */
+
+.brand-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   HAMBURGER BUTTON
+========================================================= */
+
+.menu-btn {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+    color: var(--text);
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.menu-btn:hover {
+    background: #151820;
+    color: var(--accent);
+}
+
+.menu-btn.active {
+    transform: rotate(90deg);
+}
+
+.menu-dropdown {
+    position: fixed;
+    top: var(--nav-height);
+    left: 20px;
+    z-index: 9999;
+
+    width: 230px;
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    background: rgba(13, 15, 21, 0.97);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s ease;
+}
+
+.menu-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.menu-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 12px 14px;
+
+    border-radius: 8px;
+
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.menu-dropdown a span {
+    width: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 17px;
+}
+
+.menu-dropdown a:hover {
+    background: #191c25;
+    color: var(--accent);
+}
+
+.span-home {
+    color: #8c00ff;
+}
+
+
+/* =========================================================
+   PROJOYSTICK LOGO
+========================================================= */
 
 .logo {
     display: inline-flex;
@@ -236,17 +365,30 @@ select {
     letter-spacing: 1px;
 }
 
-.logo span:last-child {
-    color: var(--accent);
-}
-
 .logo-icon {
-    color: var(--accent);
-    font-size: 17px;
+    width: 42px;
+    height: 42px;
+
+    object-fit: contain;
+    display: block;
+}
+
+.logo-text {
+    color: var(--text);
+}
+
+.logo-pro {
+    color: #ffffff;
+}
+
+.logo-joystick {
+    color: #00ff40;
 }
 
 
-/* NAV LINKS */
+/* =========================================================
+   DESKTOP NAV LINKS
+========================================================= */
 
 .nav-links {
     display: flex;
@@ -256,8 +398,10 @@ select {
 
 .nav-links a {
     color: #b7bac5;
+
     font-size: 13px;
     font-weight: 500;
+
     transition: color 0.2s ease;
 }
 
@@ -267,7 +411,9 @@ select {
 }
 
 
-/* NAV ACTIONS */
+/* =========================================================
+   NAV ACTIONS
+========================================================= */
 
 .nav-actions {
     display: flex;
@@ -276,6 +422,7 @@ select {
 }
 
 .search-btn,
+.coin-btn,
 .cart-btn {
     position: relative;
 
@@ -300,6 +447,7 @@ select {
 }
 
 .search-btn:hover,
+.coin-btn:hover,
 .cart-btn:hover {
     border-color: var(--accent-border);
     color: var(--accent);
@@ -317,6 +465,34 @@ select {
 }
 
 .cart-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+
+    min-width: 17px;
+    height: 17px;
+    padding-inline: 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 999px;
+
+    background: var(--accent);
+    color: #08090d;
+
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.coin-icon {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.coin-balance {
     position: absolute;
     top: -6px;
     right: -6px;
@@ -1955,7 +2131,7 @@ select {
     overflow-y: auto;
 }
 
-.cart-item {
+.cart-preview .cart-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2087,7 +2263,7 @@ select {
     font-size: 13px;
 }
 
-.cart-item {
+.cart-items-container .cart-item {
     display: flex;
     align-items: center;
     gap: 15px;
@@ -3436,7 +3612,7 @@ select {
         font-size: 30px;
     }
 
-    .cart-item {
+    .cart-items-container .cart-item {
         align-items: flex-start;
         flex-wrap: wrap;
         padding: 13px;
@@ -3516,9 +3692,7 @@ select {
         font-size: 11px;
     }
 
-    .logo {
-        font-size: 14px;
-    }
+    
 
     .hero h1 {
         font-size: 44px;
@@ -3547,6 +3721,7 @@ select {
     .home-product-buy {
         padding: 6px 7px;
     }
+    
 }
 
 
@@ -3566,5 +3741,92 @@ select {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+    }
+}
+
+
+
+
+
+
+/* =========================================================
+   11. FOOTER Mobile (Screens 480px and below)
+========================================================= */
+@media (max-width: 480px) {
+
+    .footer {
+        border-top: 1px solid var(--border);
+        background: #06070a;
+        width: 100%;
+    }
+
+    .footer-container {
+        width: 100%;
+        padding: 40px 24px; 
+        
+        display: grid;
+        grid-template-columns: 1fr; 
+        gap: 32px; 
+    }
+
+    .footer-brand p {
+        max-width: 100%; 
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .footer-column {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .footer-column h4 {
+        margin-bottom: 4px;
+        font-size: 13px;
+        color: #ffffff; /* Ensures headers stand out on dark background */
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .footer-column a {
+        color: var(--muted);
+        font-size: 12px;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .footer-column a:hover {
+        color: var(--accent);
+    }
+
+    .footer-bottom {
+        padding: 24px 24px;
+        display: flex;
+        flex-direction: column; 
+        align-items: center;
+        gap: 10px; /* Space between copyright and links */
+        
+        border-top: 1px solid var(--border);
+        color: #666a75;
+        font-size: 11px;
+        text-align: center;
+    }
+
+    .social-links {
+        display: flex;
+        gap: 20px;
+    }
+
+    .social-links a {
+        color: #666a75;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .social-links a:hover {
+        color: var(--accent);
     }
 }

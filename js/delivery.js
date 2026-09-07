@@ -1455,3 +1455,104 @@ onAuthStateChanged(
 
     }
 );
+
+/* warning to user if they try to leave the page without submitting the form */
+document.getElementById('logo-link').addEventListener('click', function(event) {
+    // 1. Check if any text inputs, textareas, or selects have data
+    const inputs = document.querySelectorAll('form input[type="text"], form textarea, form select');
+    let hasUnsavedData = false;
+
+    inputs.forEach(input => {
+        if (input.value.trim() !== "") {
+            hasUnsavedData = true; 
+        }
+    });
+
+    // 2. If there is data, show the warning
+    if (hasUnsavedData) {
+        const confirmLeave = confirm("You have unsaved changes. Are you sure you want to leave this page and lose your data?");
+        
+        // 3. If the user clicks "Cancel", stop them from navigating away
+        if (!confirmLeave) {
+            event.preventDefault();
+        }
+    }
+});
+
+/* ==========================================
+   UNSAVED CHANGES PROTECTION (CART TRANSITION)
+========================================== */
+
+document.addEventListener('DOMContentLoaded', () => {
+    const cartLink = document.getElementById('logo-link2');
+
+    if (cartLink) {
+        cartLink.addEventListener('click', function(event) {
+            // 1. Instantly halt browser execution/redirects
+            event.preventDefault();
+
+            // 2. Scan the delivery form for user-filled entries
+            // This captures regular inputs AND your nested custom-generated selects/textboxes
+            const inputs = document.querySelectorAll('#deliveryForm input, #deliveryForm textarea, #deliveryForm select');
+            let hasUnsavedData = false;
+
+            inputs.forEach(input => {
+                // Ignore button actions or empty placeholders
+                if (input.type !== 'submit' && input.type !== 'button' && input.value.trim() !== "") {
+                    hasUnsavedData = true;
+                }
+            });
+
+            // 3. Conditional validation workflow
+            if (hasUnsavedData) {
+                const confirmLeave = confirm("You have unsaved delivery information. Are you sure you want to go to your cart and lose this data?");
+                if (confirmLeave) {
+                    // Manually send them if they confirm "OK"
+                    window.location.href = this.getAttribute('href');
+                }
+                // If they hit "Cancel", execution terminates here, leaving data untouched
+            } else {
+                // Clean form? Pass them directly to the destination
+                window.location.href = this.getAttribute('href');
+            }
+        });
+    }
+});
+
+/* ==========================================
+   BACK BUTTON NAVIGATION BLOCKER
+========================================== */
+
+// 1. Helper function to check if the delivery form has active entries
+function hasUnsavedDeliveryData() {
+    const inputs = document.querySelectorAll('#deliveryForm input, #deliveryForm textarea, #deliveryForm select');
+    let hasData = false;
+
+    inputs.forEach(input => {
+        if (input.type !== 'submit' && input.type !== 'button' && input.value.trim() !== "") {
+            hasData = true;
+        }
+    });
+    return hasData;
+}
+
+// 2. Push a fake state into the history stack immediately on load.
+// This creates a "buffer" so that clicking the back button drops into our popstate trap instead of leaving the page.
+history.pushState(null, document.title, location.href);
+
+window.addEventListener('popstate', function (event) {
+    if (hasUnsavedDeliveryData()) {
+        const confirmLeave = confirm("You have unsaved changes. Are you sure you want to go back and lose your data?");
+        
+        if (!confirmLeave) {
+            // User clicked "Cancel" -> Push the fake state back in to keep them trapped here safely
+            history.pushState(null, document.title, location.href);
+        } else {
+            // User clicked "OK" -> Send them back to where they actually wanted to go
+            history.back();
+        }
+    } else {
+        // No data found -> Allow standard back navigation to execute normally
+        history.back();
+    }
+});
