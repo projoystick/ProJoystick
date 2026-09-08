@@ -5,7 +5,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/cart.com",
+      "source": "/cart",
       "destination": "/cart.html"
     },
     {
