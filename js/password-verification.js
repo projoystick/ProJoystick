@@ -117,7 +117,7 @@ const RECOVERY_SESSION_KEY =
 ========================================== */
 
 const RECOVERY_ACTION_URL =
-    "https://pro-joystick.vercel.app/pages/password-verification.html";
+    "https://projoystick.vercel.app/pages/password-verification.html";
 
 
 /* ==========================================
