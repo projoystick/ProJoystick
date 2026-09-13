@@ -1,5 +1,5 @@
 /* ==========================================
-   GAMEVAULT - DELIVERY INFORMATION
+   PROJOYSTICK - DELIVERY INFORMATION
 ========================================== */
 
 import {
@@ -21,14 +21,24 @@ import {
    CONSTANTS
 ========================================== */
 
-const CART_STORAGE_KEY =
-    "gamevault_cart";
+const CART_STORAGE_KEY = "gamevault_cart";
+const CHECKOUT_STORAGE_KEY = "gamevault_checkout";
+const DELIVERY_STORAGE_KEY = "gamevault_delivery";
 
-const CHECKOUT_STORAGE_KEY =
-    "gamevault_checkout";
+/*
+ * Payment session created only after successful
+ * delivery form submission.
+ */
+const PAYMENT_SESSION_KEY = "gamevault_payment_session";
 
-const DELIVERY_STORAGE_KEY =
-    "gamevault_delivery";
+/*
+ * Optional safety timeout.
+ * Payment page should reject sessions older
+ * than this amount.
+ *
+ * 10 minutes.
+ */
+const PAYMENT_SESSION_MAX_AGE = 10 * 60 * 1000;
 
 
 /* ==========================================
@@ -36,19 +46,33 @@ const DELIVERY_STORAGE_KEY =
 ========================================== */
 
 const deliveryGames =
-    document.getElementById(
-        "deliveryGames"
-    );
+    document.getElementById("deliveryGames");
 
 const deliveryForm =
-    document.getElementById(
-        "deliveryForm"
-    );
+    document.getElementById("deliveryForm");
 
 const deliverySubmit =
-    document.getElementById(
-        "deliverySubmit"
-    );
+    document.getElementById("deliverySubmit");
+
+
+/* ==========================================
+   INITIALIZATION STATE
+========================================== */
+
+let deliveryReady = false;
+let deliveryInitializing = true;
+let submissionInProgress = false;
+
+
+/* ==========================================
+   INITIAL BUTTON STATE
+========================================== */
+
+if (deliverySubmit) {
+    deliverySubmit.disabled = true;
+    deliverySubmit.textContent =
+        "Loading delivery information...";
+}
 
 
 /* ==========================================
@@ -149,7 +173,75 @@ function showError(message) {
                 ${escapeHTML(message)}
             </div>
         `;
+    }
+}
 
+
+/* ==========================================
+   PAYMENT SESSION
+========================================== */
+
+/*
+ * Creates a temporary payment session.
+ *
+ * IMPORTANT:
+ * This is a client-side navigation/session guard.
+ * It is NOT a secure payment authorization mechanism.
+ *
+ * Your backend/payment provider must still validate
+ * the actual order and payment.
+ */
+function createPaymentSession() {
+
+    const session = {
+        createdAt: Date.now(),
+        source: "delivery"
+    };
+
+    sessionStorage.setItem(
+        PAYMENT_SESSION_KEY,
+        JSON.stringify(session)
+    );
+}
+
+
+/*
+ * Optional helper if you ever need to check the
+ * payment session from another page.
+ */
+function getPaymentSession() {
+
+    try {
+
+        const stored =
+            sessionStorage.getItem(
+                PAYMENT_SESSION_KEY
+            );
+
+        if (!stored) {
+            return null;
+        }
+
+        const session =
+            JSON.parse(stored);
+
+        if (
+            !session ||
+            typeof session !== "object"
+        ) {
+            return null;
+        }
+
+        return session;
+
+    } catch (error) {
+
+        console.error(
+            "Payment session error:",
+            error
+        );
+
+        return null;
     }
 }
 
@@ -172,20 +264,6 @@ function createOptionValue(label) {
    NORMALIZE DELIVERY OPTIONS
 ========================================== */
 
-/*
- * Supports both:
- *
- * "Steam"
- *
- * and:
- *
- * {
- *     label: "Steam",
- *     value: "steam",
- *     conditionalFields: [...]
- * }
- */
-
 function normalizeDropdownOption(option) {
 
     if (typeof option === "string") {
@@ -197,7 +275,6 @@ function normalizeDropdownOption(option) {
         };
     }
 
-
     const label =
         String(
             option?.label ??
@@ -205,14 +282,12 @@ function normalizeDropdownOption(option) {
             ""
         ).trim();
 
-
     const value =
         String(
             option?.value ??
             option?.id ??
             createOptionValue(label)
         ).trim();
-
 
     const conditionalFields =
         Array.isArray(
@@ -224,7 +299,6 @@ function normalizeDropdownOption(option) {
             )
                 ? option.fields
                 : [];
-
 
     return {
         label,
@@ -250,21 +324,8 @@ function normalizeDropdownOptions(options) {
 
 
 /* ==========================================
-   CREATE DELIVERY FIELD INPUT
+   CREATE DELIVERY FIELD
 ========================================== */
-
-/*
- * Creates a customer-facing delivery field.
- *
- * Supports:
- *
- * text
- * number
- * select
- *
- * Select fields can themselves contain
- * conditionalFields on their options.
- */
 
 function createDeliveryFieldElement(
     field,
@@ -276,14 +337,12 @@ function createDeliveryFieldElement(
         return null;
     }
 
-
     const fieldKey =
         String(
             field.key ??
             field.id ??
             ""
         ).trim();
-
 
     const fieldLabel =
         String(
@@ -292,11 +351,9 @@ function createDeliveryFieldElement(
             "Field"
         ).trim();
 
-
     if (!fieldKey) {
         return null;
     }
-
 
     const fieldType =
         String(
@@ -304,33 +361,24 @@ function createDeliveryFieldElement(
             "text"
         ).toLowerCase();
 
-
     const required =
         field.required === true;
-
 
     const fieldName =
         `${namePrefix}.${fieldKey}`;
 
-
     const fieldWrapper =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     fieldWrapper.className =
         "delivery-field";
 
-
     const labelElement =
-        document.createElement(
-            "label"
-        );
+        document.createElement("label");
 
     labelElement.innerHTML =
         `${escapeHTML(fieldLabel)}
          ${required ? "<span>*</span>" : ""}`;
-
 
     fieldWrapper.appendChild(
         labelElement
@@ -344,9 +392,7 @@ function createDeliveryFieldElement(
     if (fieldType === "select") {
 
         const select =
-            document.createElement(
-                "select"
-            );
+            document.createElement("select");
 
         select.name =
             fieldName;
@@ -354,68 +400,50 @@ function createDeliveryFieldElement(
         select.required =
             required;
 
-
         const placeholder =
-            document.createElement(
-                "option"
-            );
+            document.createElement("option");
 
-        placeholder.value =
-            "";
+        placeholder.value = "";
 
         placeholder.textContent =
             `Select ${fieldLabel}`;
 
-
         select.appendChild(
             placeholder
         );
-
 
         const options =
             normalizeDropdownOptions(
                 field.options
             );
 
-
         const conditionalContainer =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
         conditionalContainer.className =
             "nested-conditional-fields";
 
-
         conditionalContainer.dataset.parentField =
             fieldKey;
 
+        options.forEach(option => {
 
-        options.forEach(
-            option => {
+            const optionElement =
+                document.createElement("option");
 
-                const optionElement =
-                    document.createElement(
-                        "option"
-                    );
-
-                optionElement.value =
-                    option.value ||
-                    createOptionValue(
-                        option.label
-                    );
-
-                optionElement.textContent =
-                    option.label;
-
-
-                select.appendChild(
-                    optionElement
+            optionElement.value =
+                option.value ||
+                createOptionValue(
+                    option.label
                 );
 
-            }
-        );
+            optionElement.textContent =
+                option.label;
 
+            select.appendChild(
+                optionElement
+            );
+        });
 
         select.addEventListener(
             "change",
@@ -424,15 +452,12 @@ function createDeliveryFieldElement(
                 conditionalContainer.innerHTML =
                     "";
 
-
                 const selectedValue =
                     select.value;
-
 
                 if (!selectedValue) {
                     return;
                 }
-
 
                 const selectedOption =
                     options.find(
@@ -440,7 +465,6 @@ function createDeliveryFieldElement(
                             option.value ===
                             selectedValue
                     );
-
 
                 if (
                     !selectedOption ||
@@ -450,7 +474,6 @@ function createDeliveryFieldElement(
                 ) {
                     return;
                 }
-
 
                 selectedOption
                     .conditionalFields
@@ -462,13 +485,10 @@ function createDeliveryFieldElement(
                                 fieldName,
                                 conditionalContainer
                             );
-
                         }
                     );
-
             }
         );
-
 
         fieldWrapper.appendChild(
             select
@@ -478,11 +498,9 @@ function createDeliveryFieldElement(
             conditionalContainer
         );
 
-
         parentContainer.appendChild(
             fieldWrapper
         );
-
 
         return fieldWrapper;
     }
@@ -495,9 +513,7 @@ function createDeliveryFieldElement(
     if (fieldType === "number") {
 
         const input =
-            document.createElement(
-                "input"
-            );
+            document.createElement("input");
 
         input.type =
             "number";
@@ -511,7 +527,6 @@ function createDeliveryFieldElement(
         input.required =
             required;
 
-
         fieldWrapper.appendChild(
             input
         );
@@ -519,7 +534,6 @@ function createDeliveryFieldElement(
         parentContainer.appendChild(
             fieldWrapper
         );
-
 
         return fieldWrapper;
     }
@@ -530,9 +544,7 @@ function createDeliveryFieldElement(
     ========================================== */
 
     const input =
-        document.createElement(
-            "input"
-        );
+        document.createElement("input");
 
     input.type =
         "text";
@@ -546,7 +558,6 @@ function createDeliveryFieldElement(
     input.required =
         required;
 
-
     fieldWrapper.appendChild(
         input
     );
@@ -554,7 +565,6 @@ function createDeliveryFieldElement(
     parentContainer.appendChild(
         fieldWrapper
     );
-
 
     return fieldWrapper;
 }
@@ -569,7 +579,6 @@ async function loadDeliveryFields(user) {
     const cart =
         getCart();
 
-
     if (!cart.length) {
 
         showError(
@@ -580,594 +589,489 @@ async function loadDeliveryFields(user) {
     }
 
 
-    const checkout =
-        getCheckoutData();
+    /* ==========================================
+       LOAD PRODUCTS
+    ========================================== */
 
-
-    if (
-        !checkout ||
-        checkout.userId !== user.uid
-    ) {
-
-        showError(
-            "Your checkout session has expired."
+    const productsSnapshot =
+        await getDocs(
+            collection(
+                db,
+                "products"
+            )
         );
 
-        return;
+    const products =
+        new Map();
+
+    productsSnapshot.forEach(
+        productDoc => {
+
+            products.set(
+                productDoc.id,
+                {
+                    id: productDoc.id,
+                    ...productDoc.data()
+                }
+            );
+        }
+    );
+
+
+    /* ==========================================
+       FIND GAMES IN CART
+    ========================================== */
+
+    const gameIds = [];
+
+    const gameNames =
+        new Map();
+
+    cart.forEach(
+        item => {
+
+            const product =
+                products.get(
+                    item.id
+                );
+
+            const gameId =
+                product?.gameId ||
+                item.gameId ||
+                "";
+
+            if (!gameId) {
+                return;
+            }
+
+            if (
+                !gameIds.includes(
+                    gameId
+                )
+            ) {
+
+                gameIds.push(
+                    gameId
+                );
+
+                gameNames.set(
+                    gameId,
+                    product?.gameName ||
+                    item.game ||
+                    "GAME"
+                );
+            }
+        }
+    );
+
+
+    /* ==========================================
+       LOAD GAMES
+    ========================================== */
+
+    const gamesSnapshot =
+        await getDocs(
+            collection(
+                db,
+                "games"
+            )
+        );
+
+    const games =
+        new Map();
+
+    gamesSnapshot.forEach(
+        gameDoc => {
+
+            games.set(
+                gameDoc.id,
+                {
+                    id: gameDoc.id,
+                    ...gameDoc.data()
+                }
+            );
+        }
+    );
+
+
+    if (deliveryGames) {
+        deliveryGames.innerHTML = "";
     }
 
 
-    try {
+    /* ==========================================
+       CONDITIONAL PRODUCTS
+    ========================================== */
 
-        /* ==========================================
-           LOAD PRODUCTS
-        ========================================== */
+    const conditionalProducts = [];
 
-        const productsSnapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "products"
-                )
-            );
+    const legacyGameProducts =
+        new Map();
 
+    cart.forEach(
+        item => {
 
-        const products =
-            new Map();
-
-
-        productsSnapshot.forEach(
-            productDoc => {
-
-                products.set(
-                    productDoc.id,
-                    {
-                        id:
-                            productDoc.id,
-                        ...productDoc.data()
-                    }
+            const product =
+                products.get(
+                    item.id
                 );
 
-            }
-        );
+            if (
+                product?.deliveryConfig?.type ===
+                "conditional"
+            ) {
 
+                conditionalProducts.push({
+                    item,
+                    product
+                });
 
-        /* ==========================================
-           FIND GAMES IN CART
-        ========================================== */
-
-        const gameIds =
-            [];
-
-
-        const gameNames =
-            new Map();
-
-
-        cart.forEach(
-            item => {
-
-                const product =
-                    products.get(
-                        item.id
-                    );
-
+            } else {
 
                 const gameId =
                     product?.gameId ||
                     item.gameId ||
                     "";
 
+                if (gameId) {
 
-                if (!gameId) {
-                    return;
-                }
+                    if (
+                        !legacyGameProducts.has(
+                            gameId
+                        )
+                    ) {
 
-
-                if (
-                    !gameIds.includes(
-                        gameId
-                    )
-                ) {
-
-                    gameIds.push(
-                        gameId
-                    );
-
-
-                    gameNames.set(
-                        gameId,
-                        product?.gameName ||
-                        item.game ||
-                        "GAME"
-                    );
-
-                }
-
-            }
-        );
-
-
-        /* ==========================================
-           LOAD GAMES
-        ========================================== */
-
-        const gamesSnapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "games"
-                )
-            );
-
-
-        const games =
-            new Map();
-
-
-        gamesSnapshot.forEach(
-            gameDoc => {
-
-                games.set(
-                    gameDoc.id,
-                    {
-                        id:
-                            gameDoc.id,
-                        ...gameDoc.data()
+                        legacyGameProducts.set(
+                            gameId,
+                            []
+                        );
                     }
+
+                    legacyGameProducts
+                        .get(gameId)
+                        .push(item);
+                }
+            }
+        }
+    );
+
+
+    /* ==========================================
+       RENDER CONDITIONAL PRODUCTS
+    ========================================== */
+
+    conditionalProducts.forEach(
+        ({
+            item,
+            product
+        }) => {
+
+            const config =
+                product.deliveryConfig ||
+                {};
+
+            const options =
+                Array.isArray(
+                    config.options
+                )
+                    ? config.options
+                    : [];
+
+            if (!options.length) {
+                return;
+            }
+
+            const box =
+                document.createElement(
+                    "section"
                 );
 
-            }
-        );
+            box.className =
+                "delivery-product-box";
 
+            const optionsHTML =
+                options
+                    .map(
+                        opt => {
 
-        deliveryGames.innerHTML =
-            "";
-
-
-        /* ==========================================
-           CONDITIONAL DELIVERY PRODUCTS
-        ========================================== */
-
-        const conditionalProducts = [];
-
-        const legacyGameProducts =
-            new Map();
-
-
-        cart.forEach(
-            item => {
-
-                const product =
-                    products.get(
-                        item.id
-                    );
-
-
-                if (
-                    product?.deliveryConfig?.type ===
-                    "conditional"
-                ) {
-
-                    conditionalProducts.push(
-                        {
-                            item,
-                            product
-                        }
-                    );
-
-                } else {
-
-                    const gameId =
-                        product?.gameId ||
-                        item.gameId ||
-                        "";
-
-
-                    if (gameId) {
-
-                        if (
-                            !legacyGameProducts.has(
-                                gameId
-                            )
-                        ) {
-
-                            legacyGameProducts.set(
-                                gameId,
-                                []
-                            );
-
-                        }
-
-
-                        legacyGameProducts
-                            .get(gameId)
-                            .push(item);
-
-                    }
-
-                }
-
-            }
-        );
-
-
-        /* ==========================================
-           RENDER CONDITIONAL PRODUCTS
-        ========================================== */
-
-        conditionalProducts.forEach(
-            ({
-                item,
-                product
-            }) => {
-
-                const config =
-                    product.deliveryConfig ||
-                    {};
-
-
-                const options =
-                    Array.isArray(
-                        config.options
-                    )
-                        ? config.options
-                        : [];
-
-
-                if (!options.length) {
-                    return;
-                }
-
-
-                const box =
-                    document.createElement(
-                        "section"
-                    );
-
-
-                box.className =
-                    "delivery-product-box";
-
-
-                const optionsHTML =
-                    options
-                        .map(
-                            opt => {
-
-                                const optionId =
-                                    opt.id ||
-                                    opt.value ||
-                                    createOptionValue(
-                                        opt.name ||
-                                        opt.label
-                                    );
-
-
-                                const optionName =
+                            const optionId =
+                                opt.id ||
+                                opt.value ||
+                                createOptionValue(
                                     opt.name ||
-                                    opt.label ||
-                                    "Option";
+                                    opt.label
+                                );
 
+                            const optionName =
+                                opt.name ||
+                                opt.label ||
+                                "Option";
 
-                                return `
-                                    <option
-                                        value="${escapeAttribute(
-                                            optionId
-                                        )}"
-                                    >
-                                        ${escapeHTML(
-                                            optionName
-                                        )}
-                                    </option>
-                                `;
+                            return `
+                                <option
+                                    value="${escapeAttribute(
+                                        optionId
+                                    )}"
+                                >
+                                    ${escapeHTML(
+                                        optionName
+                                    )}
+                                </option>
+                            `;
+                        }
+                    )
+                    .join("");
 
-                            }
-                        )
-                        .join("");
+            box.innerHTML = `
+                <div class="delivery-product-header">
 
+                    <span>
+                        DELIVERY OPTION
+                    </span>
 
-                box.innerHTML = `
-                    <div class="delivery-product-header">
+                    <h2>
+                        ${escapeHTML(
+                            product.name ||
+                            "Product"
+                        )}
+                    </h2>
 
-                        <span>
-                            DELIVERY OPTION
-                        </span>
+                </div>
 
-                        <h2>
-                            ${escapeHTML(
-                                product.name ||
-                                "Product"
-                            )}
-                        </h2>
+                <div class="delivery-field">
 
-                    </div>
+                    <label>
+                        Select Delivery Option
+                    </label>
 
-                    <div class="delivery-field">
-
-                        <label>
-                            Select Delivery Option
-                        </label>
-
-                        <select
-                            class="conditional-delivery-select"
-                            data-product-id="${escapeAttribute(
-                                product.id
-                            )}"
-                            required
-                        >
-
-                            <option value="">
-                                Choose an option...
-                            </option>
-
-                            ${optionsHTML}
-
-                        </select>
-
-                    </div>
-
-                    <div
-                        class="conditional-fields-container"
+                    <select
+                        class="conditional-delivery-select"
                         data-product-id="${escapeAttribute(
                             product.id
                         )}"
-                    ></div>
-                `;
+                        required
+                    >
 
+                        <option value="">
+                            Choose an option...
+                        </option>
 
-                deliveryGames.appendChild(
-                    box
+                        ${optionsHTML}
+
+                    </select>
+
+                </div>
+
+                <div
+                    class="conditional-fields-container"
+                    data-product-id="${escapeAttribute(
+                        product.id
+                    )}"
+                ></div>
+            `;
+
+            deliveryGames.appendChild(
+                box
+            );
+
+            const selectEl =
+                box.querySelector(
+                    ".conditional-delivery-select"
                 );
 
-
-                const selectEl =
-                    box.querySelector(
-                        ".conditional-delivery-select"
-                    );
-
-
-                const fieldsContainer =
-                    box.querySelector(
-                        ".conditional-fields-container"
-                    );
-
-
-                selectEl?.addEventListener(
-                    "change",
-                    event => {
-
-                        const selectedOptionId =
-                            event.target.value;
-
-
-                        fieldsContainer.innerHTML =
-                            "";
-
-
-                        const selectedOption =
-                            options.find(
-                                opt =>
-                                    String(
-                                        opt.id ||
-                                        opt.value ||
-                                        ""
-                                    ) ===
-                                    String(
-                                        selectedOptionId
-                                    )
-                            );
-
-
-                        if (
-                            !selectedOption ||
-                            !Array.isArray(
-                                selectedOption.fields
-                            )
-                        ) {
-                            return;
-                        }
-
-
-                        selectedOption.fields.forEach(
-                            field => {
-
-                                createDeliveryFieldElement(
-                                    field,
-                                    `product.${product.id}`,
-                                    fieldsContainer
-                                );
-
-                            }
-                        );
-
-                    }
+            const fieldsContainer =
+                box.querySelector(
+                    ".conditional-fields-container"
                 );
 
+            selectEl?.addEventListener(
+                "change",
+                event => {
 
-                /*
-                 * Keep the existing behavior:
-                 * automatically select the first
-                 * product delivery option.
-                 */
+                    const selectedOptionId =
+                        event.target.value;
 
-                if (options.length > 0) {
+                    fieldsContainer.innerHTML =
+                        "";
 
-                    const firstOption =
-                        options[0];
-
-
-                    selectEl.value =
-                        firstOption.id ||
-                        firstOption.value ||
-                        createOptionValue(
-                            firstOption.name ||
-                            firstOption.label
+                    const selectedOption =
+                        options.find(
+                            opt =>
+                                String(
+                                    opt.id ||
+                                    opt.value ||
+                                    ""
+                                ) ===
+                                String(
+                                    selectedOptionId
+                                )
                         );
 
-
-                    selectEl.dispatchEvent(
-                        new Event(
-                            "change"
+                    if (
+                        !selectedOption ||
+                        !Array.isArray(
+                            selectedOption.fields
                         )
-                    );
-
-                }
-
-            }
-        );
-
-
-        /* ==========================================
-           LEGACY GAME-BASED DELIVERY
-        ========================================== */
-
-        let fieldCount = 0;
-
-
-        gameIds.forEach(
-            gameId => {
-
-                if (
-                    !legacyGameProducts.has(
-                        gameId
-                    )
-                ) {
-                    return;
-                }
-
-
-                const game =
-                    games.get(
-                        gameId
-                    );
-
-
-                if (!game) {
-                    return;
-                }
-
-
-                const fields =
-                    Array.isArray(
-                        game.deliveryFields
-                    )
-                        ? game.deliveryFields
-                        : [];
-
-
-                if (!fields.length) {
-                    return;
-                }
-
-
-                fieldCount +=
-                    fields.length;
-
-
-                const box =
-                    document.createElement(
-                        "section"
-                    );
-
-
-                box.className =
-                    "delivery-game-box";
-
-
-                box.innerHTML = `
-                    <div class="delivery-game-header">
-
-                        <span>
-                            GAME ACCOUNT
-                        </span>
-
-                        <h2>
-                            ${escapeHTML(
-                                game.name ||
-                                gameNames.get(
-                                    gameId
-                                ) ||
-                                "Game"
-                            )}
-                        </h2>
-
-                    </div>
-                `;
-
-
-                deliveryGames.appendChild(
-                    box
-                );
-
-
-                const fieldsContainer =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                fieldsContainer.className =
-                    "game-delivery-fields";
-
-
-                box.appendChild(
-                    fieldsContainer
-                );
-
-
-                fields.forEach(
-                    field => {
-
-                        createDeliveryFieldElement(
-                            field,
-                            gameId,
-                            fieldsContainer
-                        );
-
+                    ) {
+                        return;
                     }
+
+                    selectedOption.fields.forEach(
+                        field => {
+
+                            createDeliveryFieldElement(
+                                field,
+                                `product.${product.id}`,
+                                fieldsContainer
+                            );
+                        }
+                    );
+                }
+            );
+
+
+            /* Automatically select first option */
+
+            if (options.length > 0) {
+
+                const firstOption =
+                    options[0];
+
+                selectEl.value =
+                    firstOption.id ||
+                    firstOption.value ||
+                    createOptionValue(
+                        firstOption.name ||
+                        firstOption.label
+                    );
+
+                selectEl.dispatchEvent(
+                    new Event("change")
+                );
+            }
+        }
+    );
+
+
+    /* ==========================================
+       LEGACY GAME DELIVERY
+    ========================================== */
+
+    let fieldCount = 0;
+
+    gameIds.forEach(
+        gameId => {
+
+            if (
+                !legacyGameProducts.has(
+                    gameId
+                )
+            ) {
+                return;
+            }
+
+            const game =
+                games.get(
+                    gameId
                 );
 
+            if (!game) {
+                return;
             }
-        );
 
+            const fields =
+                Array.isArray(
+                    game.deliveryFields
+                )
+                    ? game.deliveryFields
+                    : [];
 
-        /* ==========================================
-           NO DELIVERY INFORMATION
-        ========================================== */
+            if (!fields.length) {
+                return;
+            }
 
-        if (
-            !conditionalProducts.length &&
-            !fieldCount
-        ) {
+            fieldCount +=
+                fields.length;
 
-            deliveryGames.innerHTML = `
-                <div class="delivery-empty">
-                    No delivery information is required
-                    for these products.
+            const box =
+                document.createElement(
+                    "section"
+                );
+
+            box.className =
+                "delivery-game-box";
+
+            box.innerHTML = `
+                <div class="delivery-game-header">
+
+                    <span>
+                        GAME ACCOUNT
+                    </span>
+
+                    <h2>
+                        ${escapeHTML(
+                            game.name ||
+                            gameNames.get(
+                                gameId
+                            ) ||
+                            "Game"
+                        )}
+                    </h2>
+
                 </div>
             `;
 
+            deliveryGames.appendChild(
+                box
+            );
+
+            const fieldsContainer =
+                document.createElement(
+                    "div"
+                );
+
+            fieldsContainer.className =
+                "game-delivery-fields";
+
+            box.appendChild(
+                fieldsContainer
+            );
+
+            fields.forEach(
+                field => {
+
+                    createDeliveryFieldElement(
+                        field,
+                        gameId,
+                        fieldsContainer
+                    );
+                }
+            );
         }
-
-    } catch (error) {
-
-        console.error(
-            "Delivery fields loading error:",
-            error
-        );
+    );
 
 
-        showError(
-            error.message ||
-            "Unable to load delivery information."
-        );
+    /* ==========================================
+       NO DELIVERY INFORMATION
+    ========================================== */
+
+    if (
+        !conditionalProducts.length &&
+        !fieldCount
+    ) {
+
+        deliveryGames.innerHTML = `
+            <div class="delivery-empty">
+                No delivery information is required
+                for these products.
+            </div>
+        `;
     }
 }
 
 
 /* ==========================================
-   SAVE DELIVERY
+   SUBMIT / SAVE DELIVERY
 ========================================== */
 
 deliveryForm?.addEventListener(
@@ -1177,16 +1081,66 @@ deliveryForm?.addEventListener(
         event.preventDefault();
 
 
+        /* ==========================================
+           INITIALIZATION GUARD
+        ========================================== */
+
+        if (
+            deliveryInitializing ||
+            !deliveryReady
+        ) {
+
+            console.warn(
+                "Delivery form submitted before initialization completed."
+            );
+
+            alert(
+                "Please wait until the delivery information has finished loading."
+            );
+
+            return;
+        }
+
+
+        /* ==========================================
+           PREVENT DOUBLE SUBMISSION
+        ========================================== */
+
+        if (submissionInProgress) {
+            return;
+        }
+
+
+        /* ==========================================
+           BROWSER FORM VALIDATION
+        ========================================== */
+
+        if (
+            !deliveryForm.checkValidity()
+        ) {
+
+            deliveryForm.reportValidity();
+
+            return;
+        }
+
+
+        submissionInProgress = true;
+
+
         try {
 
             const data = {};
 
 
+            /* ==========================================
+               COLLECT DELIVERY FIELDS
+            ========================================== */
+
             const inputs =
                 deliveryForm.querySelectorAll(
                     "input[name], select[name], textarea[name]"
                 );
-
 
             inputs.forEach(
                 input => {
@@ -1194,11 +1148,9 @@ deliveryForm?.addEventListener(
                     const name =
                         input.name;
 
-
                     if (!name) {
                         return;
                     }
-
 
                     let gameId;
                     let key;
@@ -1207,6 +1159,7 @@ deliveryForm?.addEventListener(
 
                     /* ==========================================
                        LEGACY GAME DELIVERY
+
                        "gameId.fieldKey"
                     ========================================== */
 
@@ -1221,13 +1174,11 @@ deliveryForm?.addEventListener(
                                 "."
                             );
 
-
                         if (
                             separator === -1
                         ) {
                             return;
                         }
-
 
                         gameId =
                             name.substring(
@@ -1235,16 +1186,13 @@ deliveryForm?.addEventListener(
                                 separator
                             );
 
-
                         key =
                             name.substring(
                                 separator + 1
                             );
 
-
                         fieldValue =
                             input.value.trim();
-
 
                         if (
                             !data[gameId]
@@ -1253,9 +1201,7 @@ deliveryForm?.addEventListener(
                             data[gameId] = {
                                 fields: {}
                             };
-
                         }
-
 
                         data[gameId]
                             .fields[key] =
@@ -1266,12 +1212,12 @@ deliveryForm?.addEventListener(
 
                         /* ==========================================
                            CONDITIONAL PRODUCT DELIVERY
+
                            "product.productId.fieldId"
                         ========================================== */
 
                         const parts =
                             name.split(".");
-
 
                         if (
                             parts.length < 3
@@ -1279,24 +1225,19 @@ deliveryForm?.addEventListener(
                             return;
                         }
 
-
                         const productId =
                             parts[1];
-
 
                         const fieldId =
                             parts
                                 .slice(2)
                                 .join(".");
 
-
                         fieldValue =
                             input.value.trim();
 
-
                         const dataKey =
                             `product_${productId}`;
-
 
                         if (
                             !data[dataKey]
@@ -1307,16 +1248,12 @@ deliveryForm?.addEventListener(
                                     "conditional",
                                 fields: {}
                             };
-
                         }
-
 
                         data[dataKey]
                             .fields[fieldId] =
                             fieldValue;
-
                     }
-
                 }
             );
 
@@ -1330,24 +1267,20 @@ deliveryForm?.addEventListener(
                     ".conditional-delivery-select"
                 );
 
-
             optionSelects.forEach(
                 select => {
 
                     const productId =
                         select.dataset.productId;
 
-
                     const selectedOptionId =
                         select.value;
-
 
                     const selectedOptionText =
                         select.selectedOptions[0]
                             ?.textContent
                             ?.trim() ||
                         "";
-
 
                     if (
                         productId &&
@@ -1356,7 +1289,6 @@ deliveryForm?.addEventListener(
 
                         const key =
                             `product_${productId}`;
-
 
                         if (
                             !data[key]
@@ -1367,19 +1299,14 @@ deliveryForm?.addEventListener(
                                     "conditional",
                                 fields: {}
                             };
-
                         }
-
 
                         data[key].optionId =
                             selectedOptionId;
 
-
                         data[key].optionName =
                             selectedOptionText;
-
                     }
-
                 }
             );
 
@@ -1394,6 +1321,13 @@ deliveryForm?.addEventListener(
 
 
             /* ==========================================
+               CREATE PAYMENT SESSION
+            ========================================== */
+
+            createPaymentSession();
+
+
+            /* ==========================================
                CONTINUE TO PAYMENT
             ========================================== */
 
@@ -1402,10 +1336,8 @@ deliveryForm?.addEventListener(
                 deliverySubmit.disabled =
                     true;
 
-
                 deliverySubmit.textContent =
                     "Preparing Payment...";
-
             }
 
 
@@ -1420,25 +1352,55 @@ deliveryForm?.addEventListener(
                 error
             );
 
+            submissionInProgress = false;
+
+            if (deliverySubmit) {
+
+                deliverySubmit.disabled =
+                    false;
+
+                deliverySubmit.textContent =
+                    "Continue to Payment →";
+            }
 
             alert(
                 error.message ||
                 "Unable to save delivery information."
             );
-
         }
-
     }
 );
 
 
 /* ==========================================
-   AUTH
+   AUTHENTICATION + INITIALIZATION
 ========================================== */
 
 onAuthStateChanged(
     auth,
     async user => {
+
+        /*
+         * Every auth-state callback starts
+         * with the page locked.
+         */
+
+        deliveryReady = false;
+        deliveryInitializing = true;
+
+        if (deliverySubmit) {
+
+            deliverySubmit.disabled =
+                true;
+
+            deliverySubmit.textContent =
+                "Loading delivery information...";
+        }
+
+
+        /* ==========================================
+           NOT LOGGED IN
+        ========================================== */
 
         if (!user) {
 
@@ -1449,110 +1411,241 @@ onAuthStateChanged(
         }
 
 
-        await loadDeliveryFields(
-            user
-        );
+        /* ==========================================
+           LOAD FIRESTORE DATA
+        ========================================== */
 
+        try {
+
+            await loadDeliveryFields(
+                user
+            );
+
+
+            /*
+             * ONLY HERE does the form become
+             * ready for submission.
+             */
+
+            deliveryReady = true;
+
+            if (deliverySubmit) {
+
+                deliverySubmit.disabled =
+                    false;
+
+                deliverySubmit.textContent =
+                    "Continue to Payment →";
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                "Delivery initialization error:",
+                error
+            );
+
+            deliveryReady = false;
+
+            showError(
+                error.message ||
+                "Unable to load delivery information."
+            );
+
+            if (deliverySubmit) {
+
+                deliverySubmit.disabled =
+                    true;
+
+                deliverySubmit.textContent =
+                    "Unable to continue";
+            }
+
+        } finally {
+
+            deliveryInitializing =
+                false;
+        }
     }
 );
 
-/* warning to user if they try to leave the page without submitting the form */
-document.getElementById('logo-link').addEventListener('click', function(event) {
-    // 1. Check if any text inputs, textareas, or selects have data
-    const inputs = document.querySelectorAll('form input[type="text"], form textarea, form select');
-    let hasUnsavedData = false;
-
-    inputs.forEach(input => {
-        if (input.value.trim() !== "") {
-            hasUnsavedData = true; 
-        }
-    });
-
-    // 2. If there is data, show the warning
-    if (hasUnsavedData) {
-        const confirmLeave = confirm("You have unsaved changes. Are you sure you want to leave this page and lose your data?");
-        
-        // 3. If the user clicks "Cancel", stop them from navigating away
-        if (!confirmLeave) {
-            event.preventDefault();
-        }
-    }
-});
 
 /* ==========================================
-   UNSAVED CHANGES PROTECTION (CART TRANSITION)
+   UNSAVED DELIVERY DATA
 ========================================== */
 
-document.addEventListener('DOMContentLoaded', () => {
-    const cartLink = document.getElementById('logo-link2');
-
-    if (cartLink) {
-        cartLink.addEventListener('click', function(event) {
-            // 1. Instantly halt browser execution/redirects
-            event.preventDefault();
-
-            // 2. Scan the delivery form for user-filled entries
-            // This captures regular inputs AND your nested custom-generated selects/textboxes
-            const inputs = document.querySelectorAll('#deliveryForm input, #deliveryForm textarea, #deliveryForm select');
-            let hasUnsavedData = false;
-
-            inputs.forEach(input => {
-                // Ignore button actions or empty placeholders
-                if (input.type !== 'submit' && input.type !== 'button' && input.value.trim() !== "") {
-                    hasUnsavedData = true;
-                }
-            });
-
-            // 3. Conditional validation workflow
-            if (hasUnsavedData) {
-                const confirmLeave = confirm("You have unsaved delivery information. Are you sure you want to go to your cart and lose this data?");
-                if (confirmLeave) {
-                    // Manually send them if they confirm "OK"
-                    window.location.href = this.getAttribute('href');
-                }
-                // If they hit "Cancel", execution terminates here, leaving data untouched
-            } else {
-                // Clean form? Pass them directly to the destination
-                window.location.href = this.getAttribute('href');
-            }
-        });
-    }
-});
-
-/* ==========================================
-   BACK BUTTON NAVIGATION BLOCKER
-========================================== */
-
-// 1. Helper function to check if the delivery form has active entries
 function hasUnsavedDeliveryData() {
-    const inputs = document.querySelectorAll('#deliveryForm input, #deliveryForm textarea, #deliveryForm select');
+
+    const inputs =
+        document.querySelectorAll(
+            "#deliveryForm input, #deliveryForm textarea, #deliveryForm select"
+        );
+
     let hasData = false;
 
-    inputs.forEach(input => {
-        if (input.type !== 'submit' && input.type !== 'button' && input.value.trim() !== "") {
-            hasData = true;
+    inputs.forEach(
+        input => {
+
+            if (
+                input.type !== "submit" &&
+                input.type !== "button" &&
+                input.value.trim() !== ""
+            ) {
+
+                hasData = true;
+            }
         }
-    });
+    );
+
     return hasData;
 }
 
-// 2. Push a fake state into the history stack immediately on load.
-// This creates a "buffer" so that clicking the back button drops into our popstate trap instead of leaving the page.
-history.pushState(null, document.title, location.href);
 
-window.addEventListener('popstate', function (event) {
-    if (hasUnsavedDeliveryData()) {
-        const confirmLeave = confirm("You have unsaved changes. Are you sure you want to go back and lose your data?");
-        
+/* ==========================================
+   LOGO / LEAVE WARNING
+========================================== */
+
+const logoLink =
+    document.getElementById(
+        "logo-link"
+    );
+
+logoLink?.addEventListener(
+    "click",
+    function(event) {
+
+        if (
+            !hasUnsavedDeliveryData()
+        ) {
+            return;
+        }
+
+        const confirmLeave =
+            confirm(
+                "You have unsaved changes. Are you sure you want to leave this page and lose your data?"
+            );
+
         if (!confirmLeave) {
-            // User clicked "Cancel" -> Push the fake state back in to keep them trapped here safely
-            history.pushState(null, document.title, location.href);
+            event.preventDefault();
+        }
+    }
+);
+
+
+/* ==========================================
+   CART TRANSITION WARNING
+========================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const cartLink =
+            document.getElementById(
+                "logo-link2"
+            );
+
+        if (!cartLink) {
+            return;
+        }
+
+        cartLink.addEventListener(
+            "click",
+            function(event) {
+
+                event.preventDefault();
+
+                const inputs =
+                    document.querySelectorAll(
+                        "#deliveryForm input, #deliveryForm textarea, #deliveryForm select"
+                    );
+
+                let hasUnsavedData =
+                    false;
+
+                inputs.forEach(
+                    input => {
+
+                        if (
+                            input.type !== "submit" &&
+                            input.type !== "button" &&
+                            input.value.trim() !== ""
+                        ) {
+
+                            hasUnsavedData =
+                                true;
+                        }
+                    }
+                );
+
+                if (hasUnsavedData) {
+
+                    const confirmLeave =
+                        confirm(
+                            "You have unsaved delivery information. Are you sure you want to go to your cart and lose this data?"
+                        );
+
+                    if (confirmLeave) {
+
+                        window.location.href =
+                            this.getAttribute(
+                                "href"
+                            );
+                    }
+
+                } else {
+
+                    window.location.href =
+                        this.getAttribute(
+                            "href"
+                        );
+                }
+            }
+        );
+    }
+);
+
+
+/* ==========================================
+   BACK BUTTON NAVIGATION
+========================================== */
+
+history.pushState(
+    null,
+    document.title,
+    location.href
+);
+
+window.addEventListener(
+    "popstate",
+    function() {
+
+        if (
+            hasUnsavedDeliveryData()
+        ) {
+
+            const confirmLeave =
+                confirm(
+                    "You have unsaved changes. Are you sure you want to go back and lose your data?"
+                );
+
+            if (!confirmLeave) {
+
+                history.pushState(
+                    null,
+                    document.title,
+                    location.href
+                );
+
+            } else {
+
+                history.back();
+            }
+
         } else {
-            // User clicked "OK" -> Send them back to where they actually wanted to go
+
             history.back();
         }
-    } else {
-        // No data found -> Allow standard back navigation to execute normally
-        history.back();
     }
-});
+);

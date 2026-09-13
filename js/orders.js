@@ -1080,7 +1080,7 @@ if (refreshOrdersBtn) {
 
 
             refreshOrdersBtn.textContent =
-                "↻ Refreshing...";
+                "↻";
 
 
             try {
@@ -1112,10 +1112,14 @@ if (refreshOrdersBtn) {
                 refreshOrdersBtn.disabled =
                     false;
 
-
-                refreshOrdersBtn.textContent =
-                    "↻ Refresh Orders";
+                if (window.matchMedia("(max-width: 768px)").matches) {
+                    refreshOrdersBtn.textContent = "↻";
+                } else {
+                    refreshOrdersBtn.textContent = "↻ Refresh";
+                }
             }
         }
     );
 }
+
+

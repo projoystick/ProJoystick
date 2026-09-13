@@ -87,6 +87,8 @@ function verificationComplete() {
         "success"
     );
 
+    
+
     checkButton.style.display =
         "none";
 

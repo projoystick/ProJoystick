@@ -1198,7 +1198,7 @@ function renderCart() {
 
 
             window.location.href =
-                "checkout.html";
+                "delivery.html";
 
         }
     );

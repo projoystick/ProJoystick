@@ -21,8 +21,8 @@
 
 .orders-header {
     position: relative;
-
-    margin-bottom: 40px;
+    margin-top: -30px;
+    margin-bottom: 30px;
 }
 
 
@@ -852,8 +852,34 @@
 
     .refresh-orders-btn {
         padding: 9px 10px;
+        max-width: 30px;
 
         font-size: 11px;
     }
 
+    .refresh-text{
+        display: none;
+    }
+
+}
+
+.floating-btn {
+      position: fixed;
+      top: 100px;
+      right: 35px;
+      z-index: 1000; /* Keeps it on top of other content */
+      
+
+    }
+
+@media (max-width: 480px){
+
+    .floating-btn {
+      position: fixed;
+      top: 70px;
+      right: 10px;
+      z-index: 1000; /* Keeps it on top of other content */
+      
+
+    }
 }

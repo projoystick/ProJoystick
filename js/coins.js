@@ -16,14 +16,82 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
+// ======================================================
+// ELEMENTS
+// ======================================================
+
 const coinsContent = document.getElementById("coinsContent");
 
 
-/* ==========================================
-   AUTH STATE
-========================================== */
+// ======================================================
+// STATE
+// ======================================================
+
+let currentUser = null;
+let isRedeeming = false;
+
+
+// ======================================================
+// REDEEM SPINNER SVG
+// ======================================================
+
+const redeemSpinnerSVG = `
+    <svg
+        class="redeem-spinner-svg"
+        stroke="hsl(228, 97%, 42%)"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+    >
+        <g>
+            <circle
+                cx="12"
+                cy="12"
+                r="9.5"
+                fill="none"
+                stroke-width="3"
+                stroke-linecap="round"
+            >
+                <animate
+                    attributeName="stroke-dasharray"
+                    dur="1.5s"
+                    calcMode="spline"
+                    values="0 150;42 150;42 150;42 150"
+                    keyTimes="0;0.475;0.95;1"
+                    keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1"
+                    repeatCount="indefinite"
+                />
+
+                <animate
+                    attributeName="stroke-dashoffset"
+                    dur="1.5s"
+                    calcMode="spline"
+                    values="0;-16;-59;-59"
+                    keyTimes="0;0.475;0.95;1"
+                    keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1"
+                    repeatCount="indefinite"
+                />
+            </circle>
+
+            <animateTransform
+                attributeName="transform"
+                type="rotate"
+                dur="2s"
+                values="0 12 12;360 12 12"
+                repeatCount="indefinite"
+            />
+        </g>
+    </svg>
+`;
+
+
+// ======================================================
+// AUTH STATE
+// ======================================================
 
 onAuthStateChanged(auth, async (user) => {
+
+    currentUser = user;
 
     if (!user) {
         showLoginMessage();
@@ -35,15 +103,13 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 
-/* ==========================================
-   SHOW LOGIN MESSAGE
-========================================== */
+// ======================================================
+// LOGIN MESSAGE
+// ======================================================
 
 function showLoginMessage() {
 
-    if (!coinsContent) {
-        return;
-    }
+    if (!coinsContent) return;
 
     coinsContent.innerHTML = `
         <div class="login-message">
@@ -51,7 +117,8 @@ function showLoginMessage() {
             <h2>Please log in</h2>
 
             <p>
-                You need to be logged in to view your Fast Coins.
+                You need to be logged in to view
+                your Fast Coins.
             </p>
 
             <br>
@@ -66,28 +133,19 @@ function showLoginMessage() {
 }
 
 
-/* ==========================================
-   LOAD COINS PAGE
-========================================== */
+// ======================================================
+// LOAD COINS PAGE
+// ======================================================
 
 async function loadCoinsPage(user) {
 
+    if (!coinsContent) return;
+
     try {
 
-        /*
-         * IMPORTANT:
-         *
-         * Read the user's document directly:
-         *
-         * users/{user.uid}
-         *
-         * This matches the Firestore security rule:
-         *
-         * match /users/{userId}
-         *
-         * A normal user can therefore read
-         * their own profile and coin balance.
-         */
+        // ==================================================
+        // GET USER BALANCE
+        // ==================================================
 
         const userRef = doc(
             db,
@@ -108,15 +166,11 @@ async function loadCoinsPage(user) {
         }
 
 
-        /*
-         * Build the Coins page.
-         */
+        // ==================================================
+        // BUILD PAGE
+        // ==================================================
 
         coinsContent.innerHTML = `
-
-            <!-- =========================
-                 BALANCE
-            ========================== -->
 
             <section class="coin-balance-card">
 
@@ -139,18 +193,11 @@ async function loadCoinsPage(user) {
             </section>
 
 
-            <!-- =========================
-                 WAYS TO EARN
-            ========================== -->
-
             <section class="coins-section">
 
                 <h2>Ways to Earn</h2>
 
                 <div class="coin-card-grid">
-
-
-                    <!-- ACCOUNT CREATION -->
 
                     <div class="coin-card">
 
@@ -171,8 +218,6 @@ async function loadCoinsPage(user) {
                     </div>
 
 
-                    <!-- FIRST PURCHASE -->
-
                     <div class="coin-card">
 
                         <div class="coin-card-icon">
@@ -191,27 +236,6 @@ async function loadCoinsPage(user) {
                     </div>
 
 
-                    <!-- DAILY LOGIN -->
-
-                    <div class="coin-card">
-
-                        <div class="coin-card-icon">
-                            📅
-                        </div>
-
-                        <h3>
-                            Daily Login
-                        </h3>
-
-                        <p>
-                            Log in regularly to receive the
-                            daily Fast Coins reward.
-                        </p>
-
-                    </div>
-
-
-                    <!-- PROMOTIONS -->
 
                     <div class="coin-card">
 
@@ -235,15 +259,9 @@ async function loadCoinsPage(user) {
             </section>
 
 
-            <!-- =========================
-                 REDEEM CODE
-            ========================== -->
-
             <section class="coins-section">
 
-                <h2>
-                    Redeem a Code
-                </h2>
+                <h2>Redeem a Code</h2>
 
                 <div class="redeem-box">
 
@@ -252,6 +270,7 @@ async function loadCoinsPage(user) {
                         id="redeemCode"
                         placeholder="Enter promotion code"
                         autocomplete="off"
+                        maxlength="100"
                     >
 
                     <button
@@ -264,23 +283,12 @@ async function loadCoinsPage(user) {
 
                 </div>
 
-                <div
-                    class="coin-message"
-                    id="redeemMessage"
-                ></div>
-
             </section>
 
 
-            <!-- =========================
-                 TRANSACTION HISTORY
-            ========================== -->
-
             <section class="coins-section">
 
-                <h2>
-                    Transaction History
-                </h2>
+                <h2>Transaction History</h2>
 
                 <div
                     class="transaction-list"
@@ -294,9 +302,9 @@ async function loadCoinsPage(user) {
         `;
 
 
-        /*
-         * Redeem button
-         */
+        // ==================================================
+        // REDEEM BUTTON
+        // ==================================================
 
         const redeemButton =
             document.getElementById("redeemBtn");
@@ -311,12 +319,38 @@ async function loadCoinsPage(user) {
         }
 
 
-        /*
-         * Load transaction history.
-         */
+        // ==================================================
+        // ENTER KEY
+        // ==================================================
+
+        const redeemInput =
+            document.getElementById("redeemCode");
+
+        if (redeemInput) {
+
+            redeemInput.addEventListener(
+                "keydown",
+                (event) => {
+
+                    if (event.key === "Enter") {
+
+                        event.preventDefault();
+
+                        redeemPromotion(user);
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        // ==================================================
+        // TRANSACTIONS
+        // ==================================================
 
         await loadTransactions(user);
-
 
     } catch (error) {
 
@@ -325,62 +359,42 @@ async function loadCoinsPage(user) {
             error
         );
 
-        if (coinsContent) {
+        coinsContent.innerHTML = `
+            <div class="login-message">
 
-            coinsContent.innerHTML = `
+                <h2>
+                    Unable to load Fast Coins
+                </h2>
 
-                <div class="login-message">
+                <p>
+                    Please try again later.
+                </p>
 
-                    <h2>
-                        Unable to load Fast Coins
-                    </h2>
-
-                    <p>
-                        Please try again later.
-                    </p>
-
-                </div>
-
-            `;
-
-        }
+            </div>
+        `;
 
     }
 
 }
 
 
-/* ==========================================
-   LOAD TRANSACTIONS
-========================================== */
+// ======================================================
+// LOAD TRANSACTIONS
+// ======================================================
 
 async function loadTransactions(user) {
 
     const transactionList =
         document.getElementById("transactionList");
 
-
-    if (!transactionList) {
-        return;
-    }
-
+    if (!transactionList) return;
 
     try {
 
         const transactionsRef =
-            collection(
-                db,
-                "coinTransactions"
-            );
-
-
-        /*
-         * Only request transactions belonging
-         * to the currently logged-in user.
-         */
+            collection(db, "coinTransactions");
 
         const transactionQuery = query(
-
             transactionsRef,
 
             where(
@@ -395,22 +409,15 @@ async function loadTransactions(user) {
             ),
 
             limit(20)
-
         );
-
 
         const snapshot =
             await getDocs(transactionQuery);
 
 
-        /*
-         * No transactions yet.
-         */
-
         if (snapshot.empty) {
 
             transactionList.innerHTML = `
-
                 <div class="transaction">
 
                     <div class="transaction-info">
@@ -427,7 +434,6 @@ async function loadTransactions(user) {
                     </div>
 
                 </div>
-
             `;
 
             return;
@@ -435,36 +441,24 @@ async function loadTransactions(user) {
         }
 
 
-        /*
-         * Clear loading message.
-         */
-
         transactionList.innerHTML = "";
 
-
-        /*
-         * Display transactions.
-         */
 
         snapshot.forEach((transactionDoc) => {
 
             const data =
                 transactionDoc.data();
 
-
             const amount =
                 Number(data.amount) || 0;
 
-
             const positive =
                 amount >= 0;
-
 
             const date =
                 data.createdAt?.toDate
                     ? data.createdAt.toDate()
                     : null;
-
 
             const formattedDate =
                 date
@@ -474,7 +468,6 @@ async function loadTransactions(user) {
 
             const transactionElement =
                 document.createElement("div");
-
 
             transactionElement.className =
                 "transaction";
@@ -493,10 +486,11 @@ async function loadTransactions(user) {
                     </strong>
 
                     <span>
-                        ${formattedDate}
+                        ${escapeHtml(formattedDate)}
                     </span>
 
                 </div>
+
 
                 <div
                     class="transaction-amount ${
@@ -523,7 +517,6 @@ async function loadTransactions(user) {
 
         });
 
-
     } catch (error) {
 
         console.error(
@@ -531,15 +524,10 @@ async function loadTransactions(user) {
             error
         );
 
-
         transactionList.innerHTML = `
-
             <div class="transaction">
-
                 Unable to load transaction history.
-
             </div>
-
         `;
 
     }
@@ -547,59 +535,571 @@ async function loadTransactions(user) {
 }
 
 
-/* ==========================================
-   REDEEM PROMOTION
-========================================== */
+// ======================================================
+// REDEEM PROMOTION
+// ======================================================
 
 async function redeemPromotion(user) {
+
+    if (isRedeeming) return;
+
 
     const input =
         document.getElementById("redeemCode");
 
-
-    const message =
-        document.getElementById("redeemMessage");
-
-
-    if (!input || !message) {
-        return;
-    }
+    if (!input) return;
 
 
     const code =
-        input.value.trim();
+        input.value.trim().toUpperCase();
 
+
+    // ==================================================
+    // EMPTY CODE
+    // ==================================================
 
     if (!code) {
 
-        message.textContent =
-            "Please enter a promotion code.";
+        openRedeemModal(
+            "error",
+            "Enter a promotion code",
+            "Please enter a promotion code before continuing.",
+            true
+        );
 
         return;
 
     }
 
 
-    /*
-     * IMPORTANT:
-     *
-     * Do NOT change the user's coin balance
-     * directly from browser JavaScript.
-     *
-     * Promotion redemption will eventually
-     * be handled by trusted backend logic.
-     */
+    // ==================================================
+    // USER CHECK
+    // ==================================================
+
+    if (!user) {
+
+        openRedeemModal(
+            "error",
+            "Login required",
+            "Please log in before redeeming a promotion code.",
+            true
+        );
+
+        return;
+
+    }
 
 
-    message.textContent =
-        "Promotion redemption will be connected to the secure coin system next.";
+    // ==================================================
+    // START REDEEM
+    // ==================================================
+
+    isRedeeming = true;
+
+
+    const redeemButton =
+        document.getElementById("redeemBtn");
+
+
+    if (redeemButton) {
+
+        redeemButton.disabled = true;
+
+        redeemButton.textContent =
+            "Processing...";
+
+    }
+
+
+    // ==================================================
+    // SHOW POPUP
+    // ==================================================
+
+    openRedeemModal(
+        "loading",
+        "Verifying your code...",
+        "Please wait while we securely process your redemption.",
+        false
+    );
+
+
+    try {
+
+        // ==================================================
+        // GET FRESH TOKEN
+        // ==================================================
+
+        updateRedeemModal(
+            "loading",
+            "Verifying your account...",
+            "Securing your redemption request."
+        );
+
+
+        const idToken =
+            await user.getIdToken(true);
+
+
+        // ==================================================
+        // UPDATE POPUP
+        // ==================================================
+
+        updateRedeemModal(
+            "loading",
+            "Redeeming your code...",
+            "Your Fast Coins are being added securely."
+        );
+
+
+        // ==================================================
+        // API REQUEST
+        // ==================================================
+
+        const response = await fetch(
+            "https://projoystick-api.servng8.workers.dev/redeem",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    "Authorization":
+                        `Bearer ${idToken}`
+                },
+
+                body: JSON.stringify({
+                    code: code
+                })
+            }
+        );
+
+
+        // ==================================================
+        // RESPONSE
+        // ==================================================
+
+        let result = null;
+
+
+        try {
+
+            result =
+                await response.json();
+
+        } catch (error) {
+
+            result = {
+                success: false,
+                message:
+                    "The redemption server returned an invalid response."
+            };
+
+        }
+
+
+        console.log(
+            "Redeem API response:",
+            result
+        );
+
+
+        // ==================================================
+        // FAILED
+        // ==================================================
+
+        if (
+            !response.ok ||
+            !result ||
+            !result.success
+        ) {
+
+            openRedeemModal(
+                "error",
+                "Redemption failed",
+                result?.message ||
+                    "Unable to redeem this promotion.",
+                true
+            );
+
+
+            resetRedeemButton();
+
+            return;
+
+        }
+
+
+        // ==================================================
+        // SUCCESS
+        // ==================================================
+
+        const awardedCoins =
+            Number(result.coinsAwarded) || 0;
+
+
+        const newBalance =
+            Number(result.balance);
+
+
+        let successMessage =
+            `You received ${awardedCoins.toLocaleString()} Fast Coins.`;
+
+
+        if (!Number.isNaN(newBalance)) {
+
+            successMessage +=
+                ` Your new balance is ${newBalance.toLocaleString()} coins.`;
+
+        }
+
+
+        openRedeemModal(
+            "success",
+            "Redemption successful!",
+            successMessage,
+            false
+        );
+
+
+        // ==================================================
+        // RELOAD PAGE
+        // ==================================================
+
+        setTimeout(() => {
+
+            window.location.reload();
+
+        }, 1800);
+
+    } catch (error) {
+
+        console.error(
+            "Redeem API error:",
+            error
+        );
+
+
+        openRedeemModal(
+            "error",
+            "Connection failed",
+            "Unable to connect to the secure redemption system. Please try again.",
+            true
+        );
+
+
+        resetRedeemButton();
+
+    }
 
 }
 
 
-/* ==========================================
-   ESCAPE HTML
-========================================== */
+// ======================================================
+// REDEEM MODAL
+// ======================================================
+
+function openRedeemModal(
+    type,
+    title,
+    message,
+    showClose = false
+) {
+
+    const modal =
+        document.getElementById("redeemModal");
+
+
+    if (!modal) {
+
+        console.error(
+            "Redeem modal #redeemModal was not found."
+        );
+
+        return;
+
+    }
+
+
+    updateRedeemModal(
+        type,
+        title,
+        message
+    );
+
+
+    const closeButton =
+        document.getElementById(
+            "redeemModalClose"
+        );
+
+
+    if (closeButton) {
+
+        closeButton.hidden =
+            !showClose;
+
+    }
+
+
+    modal.hidden = false;
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    document.body.classList.add(
+        "redeem-modal-open"
+    );
+
+}
+
+
+// ======================================================
+// UPDATE MODAL
+// ======================================================
+
+function updateRedeemModal(
+    type,
+    title,
+    message
+) {
+
+    const icon =
+        document.getElementById(
+            "redeemModalIcon"
+        );
+
+    const titleElement =
+        document.getElementById(
+            "redeemModalTitle"
+        );
+
+    const messageElement =
+        document.getElementById(
+            "redeemModalMessage"
+        );
+
+
+    if (
+        !icon ||
+        !titleElement ||
+        !messageElement
+    ) {
+
+        console.error(
+            "Redeem modal elements are missing."
+        );
+
+        return;
+
+    }
+
+
+    // ==================================================
+    // LOADING
+    // ==================================================
+
+    if (type === "loading") {
+
+        icon.className =
+            "redeem-modal-icon loading";
+
+        icon.innerHTML =
+            redeemSpinnerSVG;
+
+    }
+
+
+    // ==================================================
+    // SUCCESS
+    // ==================================================
+
+    if (type === "success") {
+
+        icon.className =
+            "redeem-modal-icon success";
+
+        icon.textContent =
+            "✓";
+
+    }
+
+
+    // ==================================================
+    // ERROR
+    // ==================================================
+
+    if (type === "error") {
+
+        icon.className =
+            "redeem-modal-icon error";
+
+        icon.textContent =
+            "×";
+
+    }
+
+
+    titleElement.textContent =
+        title;
+
+    messageElement.textContent =
+        message;
+
+}
+
+
+// ======================================================
+// CLOSE MODAL
+// ======================================================
+
+function closeRedeemModal() {
+
+    const modal =
+        document.getElementById(
+            "redeemModal"
+        );
+
+
+    if (!modal) return;
+
+
+    modal.hidden = true;
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    document.body.classList.remove(
+        "redeem-modal-open"
+    );
+
+}
+
+
+// ======================================================
+// CLOSE BUTTON
+// ======================================================
+
+document.addEventListener(
+    "click",
+    (event) => {
+
+        if (
+            event.target.closest(
+                "#redeemModalClose"
+            )
+        ) {
+
+            if (isRedeeming) return;
+
+            closeRedeemModal();
+
+            resetRedeemButton();
+
+        }
+
+    }
+);
+
+
+// ======================================================
+// BACKDROP
+// ======================================================
+
+document.addEventListener(
+    "click",
+    (event) => {
+
+        if (
+            event.target.closest(
+                "#redeemModalBackdrop"
+            )
+        ) {
+
+            if (isRedeeming) return;
+
+            closeRedeemModal();
+
+            resetRedeemButton();
+
+        }
+
+    }
+);
+
+
+// ======================================================
+// ESCAPE
+// ======================================================
+
+document.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (
+            event.key === "Escape" &&
+            !isRedeeming
+        ) {
+
+            const modal =
+                document.getElementById(
+                    "redeemModal"
+                );
+
+
+            if (
+                modal &&
+                !modal.hidden
+            ) {
+
+                closeRedeemModal();
+
+                resetRedeemButton();
+
+            }
+
+        }
+
+    }
+);
+
+
+// ======================================================
+// RESET BUTTON
+// ======================================================
+
+function resetRedeemButton() {
+
+    isRedeeming = false;
+
+
+    const redeemButton =
+        document.getElementById(
+            "redeemBtn"
+        );
+
+
+    if (redeemButton) {
+
+        redeemButton.disabled = false;
+
+        redeemButton.textContent =
+            "Redeem";
+
+    }
+
+}
+
+
+// ======================================================
+// ESCAPE HTML
+// ======================================================
 
 function escapeHtml(value) {
 

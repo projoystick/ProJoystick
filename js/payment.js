@@ -1,24 +1,3 @@
-/* ==========================================
-   PROJOYSTICK — PAYMENT PAGE
-
-   Firebase Auth + Firestore only
-   NO Firebase Cloud Functions
-
-   IMPORTANT:
-   Stock is NOT deducted by the customer.
-
-   Customer:
-   - Creates pending order
-   - Pays using QR
-   - Waits for admin verification
-
-   Admin:
-   - Manually verifies payment
-   - Checks stock
-   - Deducts stock
-   - Marks order as paid
-========================================== */
-
 import {
     auth,
     db
@@ -37,10 +16,25 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
+import {
+    initQrPayment,
+    prepareQrPayment,
+    restoreQrPayment,
+    stopQrPayment,
+    clearQrPaymentStorage
+} from "./payment-qr.js";
 
-/* ==========================================
-   CONSTANTS
-========================================== */
+import {
+    initFastCoinPayment,
+    loadFastCoinBalance,
+    setFastCoinAmount,
+    resetFastCoinPayment
+} from "./payment-fastcoin.js";
+
+
+/* =========================================================
+   STORAGE / CONFIG
+========================================================= */
 
 const CART_STORAGE_KEY =
     "gamevault_cart";
@@ -51,115 +45,307 @@ const CHECKOUT_STORAGE_KEY =
 const DELIVERY_STORAGE_KEY =
     "gamevault_delivery";
 
-const PAYMENT_TIMEOUT =
-    2 * 60 * 1000;
+const PAYMENT_SESSION_KEY =
+    "gamevault_payment_session";
+
+const PAYMENT_SESSION_MAX_AGE =
+    10 * 60 * 1000;
 
 const GAMEVAULT_UPI_ID =
     "fullmast592@okhdfcbank";
 
 
-/* ==========================================
-   ELEMENTS
-========================================== */
+/* =========================================================
+   DOM
+========================================================= */
 
 const paymentLoading =
-    document.getElementById("paymentLoading");
+    document.getElementById(
+        "paymentLoading"
+    );
 
 const paymentSection =
-    document.getElementById("paymentSection");
+    document.getElementById(
+        "paymentSection"
+    );
 
 const paymentSuccess =
-    document.getElementById("paymentSuccess");
+    document.getElementById(
+        "paymentSuccess"
+    );
 
 const paymentRedirecting =
-    document.getElementById("paymentRedirecting");
+    document.getElementById(
+        "paymentRedirecting"
+    );
 
 const paymentError =
-    document.getElementById("paymentError");
+    document.getElementById(
+        "paymentError"
+    );
 
 const paymentErrorMessage =
-    document.getElementById("paymentErrorMessage");
+    document.getElementById(
+        "paymentErrorMessage"
+    );
 
 const paymentOrderId =
-    document.getElementById("paymentOrderId");
+    document.getElementById(
+        "paymentOrderId"
+    );
 
 const paymentItemCount =
-    document.getElementById("paymentItemCount");
+    document.getElementById(
+        "paymentItemCount"
+    );
 
 const paymentTotal =
-    document.getElementById("paymentTotal");
-
-const upiId =
-    document.getElementById("upiId");
-
-const copyUpiBtn =
-    document.getElementById("copyUpiBtn");
-
-const paymentTimer =
-    document.getElementById("paymentTimer");
+    document.getElementById(
+        "paymentTotal"
+    );
 
 const successOrderId =
-    document.getElementById("successOrderId");
+    document.getElementById(
+        "successOrderId"
+    );
 
 const successOrderTotal =
-    document.getElementById("successOrderTotal");
+    document.getElementById(
+        "successOrderTotal"
+    );
 
 const viewOrderBtn =
-    document.getElementById("viewOrderBtn");
+    document.getElementById(
+        "viewOrderBtn"
+    );
 
 const paymentErrorBackBtn =
     document.getElementById(
         "paymentErrorBackBtn"
     );
 
+const upiId =
+    document.getElementById(
+        "upiId"
+    );
 
-/* ==========================================
+const fastCoinTotal =
+    document.getElementById(
+        "fastCoinTotal"
+    );
+
+const summaryMrp =
+    document.getElementById(
+        "summaryMrp"
+    );
+
+const summaryTotal =
+    document.getElementById(
+        "summaryTotal"
+    );
+
+const paymentMethodButtons =
+    document.querySelectorAll(
+        ".payment-method"
+    );
+
+const paymentMethodPanels =
+    document.querySelectorAll(
+        ".method-panel"
+    );
+
+
+/* =========================================================
    STATE
-========================================== */
+========================================================= */
 
-let currentOrderId = null;
+let currentUser =
+    null;
 
-let currentOrder = null;
+let currentOrderId =
+    null;
 
-let unsubscribeOrder = null;
+let currentOrder =
+    null;
 
-let timerInterval = null;
+let unsubscribeOrder =
+    null;
 
-let paymentTimeout = null;
+let paymentFinished =
+    false;
 
-let paymentFinished = false;
+let paymentInitialized =
+    false;
 
+let selectedPaymentMethod =
+    "upi";
+
+let paymentTimeoutRedirect =
+    null;
+
+
+/* =========================================================
+   PAYMENT SESSION GUARD
+========================================================= */
 
 /*
- * Prevent initializePayment from creating
- * multiple orders if Firebase auth state
- * fires more than once.
+ * Delivery page creates this session only after
+ * successful delivery form submission.
+ *
+ * This protects the navigation flow:
+ *
+ * delivery.html
+ *      ↓
+ * payment session
+ *      ↓
+ * payment.html
+ *
+ * IMPORTANT:
+ * This is NOT secure payment authorization.
+ * Real payment/order authorization must still happen
+ * on the server / Firebase security rules.
  */
-let paymentInitialized = false;
+
+function getPaymentSession() {
+
+    try {
+
+        const stored =
+            sessionStorage.getItem(
+                PAYMENT_SESSION_KEY
+            );
+
+        if (!stored) {
+            return null;
+        }
+
+        const session =
+            JSON.parse(stored);
+
+        if (
+            !session ||
+            typeof session !== "object"
+        ) {
+            return null;
+        }
+
+        const createdAt =
+            Number(
+                session.createdAt
+            );
+
+        if (
+            !Number.isFinite(
+                createdAt
+            )
+        ) {
+            return null;
+        }
+
+        const age =
+            Date.now() -
+            createdAt;
+
+        if (
+            age < 0 ||
+            age > PAYMENT_SESSION_MAX_AGE
+        ) {
+
+            sessionStorage.removeItem(
+                PAYMENT_SESSION_KEY
+            );
+
+            return null;
+        }
+
+        if (
+            session.source !==
+            "delivery"
+        ) {
+            return null;
+        }
+
+        return session;
+
+    } catch (error) {
+
+        console.error(
+            "Payment session error:",
+            error
+        );
+
+        return null;
+    }
+}
 
 
-/* ==========================================
+function requirePaymentSession() {
+
+    const session =
+        getPaymentSession();
+
+    if (session) {
+        return true;
+    }
+
+    console.warn(
+        "Payment page opened without a valid delivery session."
+    );
+
+    showPaymentError(
+        "Please complete the delivery information before continuing to payment."
+    );
+
+    setTimeout(
+        () => {
+
+            window.location.href =
+                "cart.html";
+
+        },
+        1200
+    );
+
+    return false;
+}
+
+
+function clearPaymentSession() {
+
+    sessionStorage.removeItem(
+        PAYMENT_SESSION_KEY
+    );
+
+}
+
+
+/* =========================================================
    HELPERS
-========================================== */
+========================================================= */
 
 function formatPrice(value) {
 
-    const price =
+    const number =
         Number(value);
 
-    if (!Number.isFinite(price)) {
+    if (
+        !Number.isFinite(
+            number
+        )
+    ) {
+
         return "₹0";
     }
 
-    return `₹${price.toLocaleString(
+    return `₹${number.toLocaleString(
         "en-IN"
     )}`;
 }
 
 
-/* ==========================================
+/* =========================================================
    CART
-========================================== */
+========================================================= */
 
 function getCart() {
 
@@ -175,9 +361,13 @@ function getCart() {
         }
 
         const parsed =
-            JSON.parse(stored);
+            JSON.parse(
+                stored
+            );
 
-        return Array.isArray(parsed)
+        return Array.isArray(
+            parsed
+        )
             ? parsed
             : [];
 
@@ -201,40 +391,114 @@ function clearCart() {
 }
 
 
-/* ==========================================
-   CHECKOUT DATA
-========================================== */
+function getCartTotal(cart) {
 
-function getCheckoutData() {
+    if (
+        !Array.isArray(
+            cart
+        )
+    ) {
 
-    try {
+        return 0;
+    }
 
-        const stored =
-            sessionStorage.getItem(
-                CHECKOUT_STORAGE_KEY
+    return cart.reduce(
+        (
+            total,
+            item
+        ) => {
+
+            const price =
+                getEffectiveItemPrice(
+                    item
+                );
+
+            const quantity =
+                Math.max(
+                    1,
+                    Number(
+                        item.quantity
+                    ) || 1
+                );
+
+            return (
+                total +
+                price *
+                quantity
             );
 
-        if (!stored) {
-            return null;
-        }
-
-        return JSON.parse(stored);
-
-    } catch (error) {
-
-        console.error(
-            "Checkout data error:",
-            error
-        );
-
-        return null;
-    }
+        },
+        0
+    );
 }
 
 
-/* ==========================================
-   DELIVERY DATA
-========================================== */
+function getCartItemCount(cart) {
+
+    if (
+        !Array.isArray(
+            cart
+        )
+    ) {
+
+        return 0;
+    }
+
+    return cart.reduce(
+        (
+            count,
+            item
+        ) => {
+
+            return (
+                count +
+                Math.max(
+                    1,
+                    Number(
+                        item.quantity
+                    ) || 1
+                )
+            );
+
+        },
+        0
+    );
+}
+
+
+function getEffectiveItemPrice(item) {
+
+    const basePrice =
+        Number(
+            item?.price ?? 0
+        );
+
+    const dealPrice =
+        Number(
+            item?.dealPrice ?? 0
+        );
+
+    if (
+        Number.isFinite(
+            dealPrice
+        ) &&
+        dealPrice > 0
+    ) {
+
+        return dealPrice;
+    }
+
+    return Number.isFinite(
+        basePrice
+    )
+        ? basePrice
+        : 0;
+}
+
+
+/* =========================================================
+   DELIVERY
+========================================================= */
 
 function getDeliveryData() {
 
@@ -250,7 +514,9 @@ function getDeliveryData() {
         }
 
         const parsed =
-            JSON.parse(stored);
+            JSON.parse(
+                stored
+            );
 
         return (
             parsed &&
@@ -271,10 +537,6 @@ function getDeliveryData() {
 }
 
 
-/* ==========================================
-   CLEAR CHECKOUT SESSION
-========================================== */
-
 function clearCheckoutSession() {
 
     sessionStorage.removeItem(
@@ -284,91 +546,58 @@ function clearCheckoutSession() {
     sessionStorage.removeItem(
         DELIVERY_STORAGE_KEY
     );
+
+    if (
+        currentOrderId
+    ) {
+
+        clearQrPaymentStorage(
+            currentOrderId
+        );
+    }
 }
 
 
-/* ==========================================
-   CART TOTAL
-========================================== */
-
-function getCartTotal(cart) {
-
-    return cart.reduce(
-        (total, item) => {
-
-            const price =
-                Number(item.price) || 0;
-
-            const quantity =
-                Math.max(
-                    1,
-                    Number(item.quantity) || 1
-                );
-
-            return total +
-                price * quantity;
-
-        },
-        0
-    );
-}
-
-
-/* ==========================================
-   ITEM COUNT
-========================================== */
-
-function getCartItemCount(cart) {
-
-    return cart.reduce(
-        (total, item) => {
-
-            return total +
-                Math.max(
-                    1,
-                    Number(item.quantity) || 1
-                );
-
-        },
-        0
-    );
-}
-
-
-/* ==========================================
+/* =========================================================
    ORDER ID
-========================================== */
+========================================================= */
 
 function generateOrderId() {
-
-    const random =
-        Math.random()
-            .toString(36)
-            .substring(2, 8)
-            .toUpperCase();
 
     const timestamp =
         Date.now()
             .toString(36)
-            .slice(-5)
             .toUpperCase();
 
-    return `GV-${timestamp}${random}`;
+    const random =
+        Math.random()
+            .toString(36)
+            .slice(
+                2,
+                8
+            )
+            .toUpperCase();
+
+    return (
+        `PJ-${timestamp}-${random}`
+    );
 }
 
 
-/* ==========================================
-   PAGE STATE
-========================================== */
+/* =========================================================
+   UI
+========================================================= */
 
 function showOnly(element) {
 
     const sections = [
+
         paymentLoading,
         paymentSection,
         paymentSuccess,
         paymentRedirecting,
         paymentError
+
     ];
 
     sections.forEach(
@@ -380,6 +609,7 @@ function showOnly(element) {
                     "hidden"
                 );
             }
+
         }
     );
 
@@ -392,16 +622,15 @@ function showOnly(element) {
 }
 
 
-/* ==========================================
-   ERROR
-========================================== */
-
 function showPaymentError(message) {
 
-    if (paymentErrorMessage) {
+    if (
+        paymentErrorMessage
+    ) {
 
         paymentErrorMessage.textContent =
-            message;
+            message ||
+            "Something went wrong while preparing your payment.";
     }
 
     showOnly(
@@ -410,30 +639,21 @@ function showPaymentError(message) {
 }
 
 
-/* ==========================================
-   VERIFY PRODUCTS
-==========================================
-
-   IMPORTANT:
-
-   This checks current product information
-   before creating the order.
-
-   It does NOT modify stock.
-
-   The admin performs the final stock
-   deduction when approving the order.
-========================================== */
+/* =========================================================
+   REFRESH PRODUCTS
+========================================================= */
 
 async function refreshCartProducts(cart) {
 
-    if (cart.length === 0) {
+    if (
+        !Array.isArray(
+            cart
+        ) ||
+        cart.length === 0
+    ) {
 
-        throw new Error(
-            "Your cart is empty."
-        );
+        return [];
     }
-
 
     const snapshot =
         await getDocs(
@@ -443,345 +663,240 @@ async function refreshCartProducts(cart) {
             )
         );
 
-
     const products =
         new Map();
 
-
     snapshot.forEach(
-        productDoc => {
+        item => {
 
             products.set(
-                productDoc.id,
+                item.id,
                 {
                     id:
-                        productDoc.id,
+                        item.id,
 
-                    ...productDoc.data()
+                    ...item.data()
                 }
             );
+
         }
     );
 
-
-    const updatedCart = [];
-
+    const refreshed = [];
 
     for (
-        const cartItem
-        of cart
+        const item of cart
     ) {
+
+        const productId =
+            item.productId ||
+            item.id;
+
+        if (!productId) {
+            continue;
+        }
 
         const product =
             products.get(
-                cartItem.id
+                productId
             );
-
 
         if (!product) {
 
             throw new Error(
-                `${cartItem.name || "A product"} is no longer available.`
+                `The product "${item.name || productId}" is no longer available.`
             );
         }
-
-
-        const stockNumber =
-            Number(product.stock);
-
 
         const stock =
-            Number.isFinite(
-                stockNumber
-            )
-                ? Math.max(
-                    0,
-                    Math.floor(
-                        stockNumber
-                    )
-                )
-                : 0;
-
-
-        if (stock <= 0) {
-
-            throw new Error(
-                `${product.name || "A product"} is currently out of stock.`
+            Number(
+                product.stock
             );
-        }
-
 
         const quantity =
             Math.max(
                 1,
                 Number(
-                    cartItem.quantity
+                    item.quantity
                 ) || 1
             );
 
-
-        if (quantity > stock) {
+        if (
+            Number.isFinite(
+                stock
+            ) &&
+            stock <= 0
+        ) {
 
             throw new Error(
-                `Only ${stock} ${product.name || "item"} available.`
+                `${product.name || item.name || "A product"} is out of stock.`
             );
         }
 
+        if (
+            Number.isFinite(
+                stock
+            ) &&
+            quantity > stock
+        ) {
 
-        /*
-         * Use the CURRENT database price.
-         */
-        let price =
-            Number(product.price) || 0;
+            throw new Error(
+                `Only ${stock} unit(s) of ${product.name || item.name || "this product"} are available.`
+            );
+        }
 
+        const price =
+            Number(
+                product.price ??
+                item.price ??
+                0
+            );
 
         const dealPrice =
             Number(
-                product.dealPrice
+                product.dealPrice ??
+                item.dealPrice ??
+                0
             );
 
+        refreshed.push({
 
-        if (
-            product.deal === true &&
-            Number.isFinite(
-                dealPrice
-            ) &&
-            dealPrice >= 0 &&
-            dealPrice < price
-        ) {
+            ...item,
 
-            price =
-                dealPrice;
-        }
-
-
-        updatedCart.push({
+            productId,
 
             id:
-                product.id,
+                productId,
 
             name:
-                product.name ||
-                "Unnamed Product",
-
-            game:
-                product.gameName ||
-                cartItem.game ||
-                "GAME",
-
-            gameId:
-                product.gameId ||
-                "",
-
-            amount:
-                product.amount ||
-                "",
-
-            type:
-                product.type ||
-                "currency",
-
-            image:
-                product.image ||
-                "",
+                product.name ??
+                item.name ??
+                "Product",
 
             price:
-                price,
+                Number.isFinite(
+                    price
+                )
+                    ? price
+                    : 0,
 
-            quantity:
-                quantity,
+            dealPrice:
+                Number.isFinite(
+                    dealPrice
+                )
+                    ? dealPrice
+                    : 0,
 
-            /*
-             * This is informational only.
-             *
-             * It is NOT considered a stock
-             * reservation.
-             */
-            stock:
-                stock
+            quantity
+
         });
     }
 
-
-    return updatedCart;
+    return refreshed;
 }
 
 
-/* ==========================================
+/* =========================================================
    CREATE ORDER
-==========================================
-
-   NO STOCK MODIFICATION HERE.
-
-   This is intentional.
-
-   Firestore rules prevent the customer
-   from modifying products.
-
-========================================== */
+========================================================= */
 
 async function createOrder(user) {
 
     const cart =
         getCart();
 
-
-    if (cart.length === 0) {
+    if (
+        cart.length === 0
+    ) {
 
         throw new Error(
             "Your cart is empty."
         );
     }
 
-
-    /*
-     * Get the latest product information.
-     */
-    const verifiedCart =
+    const items =
         await refreshCartProducts(
             cart
         );
 
+    if (
+        items.length === 0
+    ) {
 
-    const checkoutData =
-        getCheckoutData();
-
+        throw new Error(
+            "No valid products were found in your cart."
+        );
+    }
 
     const deliveryInfo =
         getDeliveryData();
 
-
-    const total =
+    const subtotal =
         getCartTotal(
-            verifiedCart
+            items
         );
 
+    if (
+        !Number.isFinite(
+            subtotal
+        ) ||
+        subtotal <= 0
+    ) {
 
-    const itemCount =
-        getCartItemCount(
-            verifiedCart
+        throw new Error(
+            "Unable to calculate the order total."
         );
-
+    }
 
     const orderId =
         generateOrderId();
 
-
-    /*
-     * Store a snapshot of the products
-     * and prices at checkout.
-     */
-    const orderItems =
-        verifiedCart.map(
-            item => ({
-
-                productId:
-                    item.id,
-
-                name:
-                    item.name,
-
-                game:
-                    item.game,
-
-                gameId:
-                    item.gameId,
-
-                amount:
-                    item.amount,
-
-                type:
-                    item.type,
-
-                image:
-                    item.image,
-
-                price:
-                    item.price,
-
-                quantity:
-                    item.quantity
-            })
-        );
-
-
-    const orderRef =
-        doc(
-            db,
-            "orders",
-            orderId
-        );
-
-
-    /*
-     * IMPORTANT:
-     *
-     * setDoc is allowed by the new rules
-     * only when:
-     *
-     * request.auth.uid == order.userId
-     * paymentStatus == pending
-     * paymentVerified == false
-     * orderStatus == pending
-     */
     const order = {
 
-        orderId:
-            orderId,
+        orderId,
 
         userId:
             user.uid,
 
         userEmail:
-            user.email || "",
-
-        customerName:
-            checkoutData?.name ||
-            user.displayName ||
+            user.email ||
             "",
 
-        items:
-            orderItems,
+        customerName:
+            user.displayName ||
+            deliveryInfo.fullName ||
+            deliveryInfo.name ||
+            "",
+
+        items,
 
         itemCount:
-            itemCount,
+            getCartItemCount(
+                items
+            ),
 
-        subtotal:
-            total,
+        subtotal,
 
         total:
-            total,
+            subtotal,
 
         currency:
             "INR",
 
         paymentMethod:
-            checkoutData?.paymentMethod ||
             "upi",
 
-        deliveryInfo:
-            deliveryInfo,
+        deliveryInfo,
 
-        /*
-         * PAYMENT
-         */
         paymentStatus:
             "pending",
 
         paymentVerified:
             false,
 
-        /*
-         * ORDER
-         */
         orderStatus:
             "pending",
 
-        /*
-         * STOCK
-         *
-         * No stock has been deducted.
-         */
         stockHeld:
             false,
 
@@ -791,59 +906,50 @@ async function createOrder(user) {
         stockReleaseReason:
             "",
 
-        /*
-         * Admin message
-         */
         adminMessage:
             "",
 
-        /*
-         * Created client-side.
-         */
         createdAt:
             new Date(),
 
         updatedAt:
             new Date()
+
     };
 
-
     await setDoc(
-        orderRef,
+
+        doc(
+            db,
+            "orders",
+            orderId
+        ),
+
         order
     );
 
-
-    return {
-
-        orderId:
-            orderId,
-
-        orderItems:
-            orderItems,
-
-        itemCount:
-            itemCount,
-
-        total:
-            total,
-
-        cart:
-            verifiedCart,
-
-        deliveryInfo:
-            deliveryInfo
-    };
+    return order;
 }
 
 
-/* ==========================================
-   PAYMENT DETAILS
-========================================== */
+/* =========================================================
+   SUMMARY
+========================================================= */
 
-function updatePaymentDetails(order) {
+function updateOrderSummary(order) {
 
-    if (paymentOrderId) {
+    if (!order) {
+        return;
+    }
+
+    const total =
+        Number(
+            order.total
+        ) || 0;
+
+    if (
+        paymentOrderId
+    ) {
 
         paymentOrderId.textContent =
             order.orderId ||
@@ -851,207 +957,174 @@ function updatePaymentDetails(order) {
             "—";
     }
 
-
-    if (paymentItemCount) {
+    if (
+        paymentItemCount
+    ) {
 
         paymentItemCount.textContent =
-            order.itemCount || 0;
-    }
-
-
-    if (paymentTotal) {
-
-        paymentTotal.textContent =
-            formatPrice(
-                order.total
+            String(
+                order.itemCount ||
+                0
             );
     }
 
+    if (
+        paymentTotal
+    ) {
 
-    if (upiId) {
+        paymentTotal.textContent =
+            formatPrice(
+                total
+            );
+    }
+
+    if (
+        upiId
+    ) {
 
         upiId.textContent =
             GAMEVAULT_UPI_ID;
     }
+
+    if (
+        fastCoinTotal
+    ) {
+
+        fastCoinTotal.textContent =
+            formatPrice(
+                total
+            );
+    }
+
+    if (
+        summaryTotal
+    ) {
+
+        summaryTotal.textContent =
+            formatPrice(
+                total
+            );
+    }
+
+    if (
+        summaryMrp
+    ) {
+
+        summaryMrp.textContent =
+            formatPrice(
+                getCartTotal(
+                    getCart()
+                )
+            );
+    }
+
+    setFastCoinAmount(
+        total
+    );
 }
 
 
-/* ==========================================
-   COPY UPI
-========================================== */
-
-copyUpiBtn?.addEventListener(
-    "click",
-    async () => {
-
-        try {
-
-            await navigator.clipboard.writeText(
-                GAMEVAULT_UPI_ID
-            );
-
-
-            copyUpiBtn.textContent =
-                "COPIED";
-
-
-            setTimeout(
-                () => {
-
-                    copyUpiBtn.textContent =
-                        "COPY";
-
-                },
-                1500
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Unable to copy UPI ID:",
-                error
-            );
-
-        }
-    }
-);
-
-
-/* ==========================================
+/* =========================================================
    PAYMENT STATUS
-========================================== */
+========================================================= */
 
 function isPaymentVerified(data) {
 
+    const paymentStatus =
+        String(
+            data?.paymentStatus ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
     return (
+
         data?.paymentVerified === true ||
-        data?.paymentStatus === "paid" ||
-        data?.paymentStatus === "verified"
+
+        [
+            "paid",
+            "verified",
+            "success",
+            "successful",
+            "complete",
+            "completed"
+        ].includes(
+            paymentStatus
+        )
+
     );
 }
 
 
 function isPaymentFailed(data) {
 
-    return (
-        data?.paymentStatus === "failed" ||
-        data?.paymentStatus === "cancelled" ||
-        data?.paymentStatus === "canceled"
+    return [
+
+        "failed",
+        "cancelled",
+        "canceled"
+
+    ].includes(
+        String(
+            data?.paymentStatus ||
+            ""
+        )
+            .trim()
+            .toLowerCase()
     );
 }
 
 
-/* ==========================================
-   ORDER UPDATE
-========================================== */
-
-function handleOrderUpdate(snapshot) {
-
-    if (!snapshot.exists()) {
-
-        showPaymentError(
-            "Your order could not be found."
-        );
-
-        return;
-    }
-
-
-    const data =
-        snapshot.data();
-
-
-    currentOrder = {
-
-        orderId:
-            currentOrderId,
-
-        ...data
-    };
-
-
-    updatePaymentDetails(
-        currentOrder
-    );
-
-
-    /*
-     * PAYMENT SUCCESS
-     */
-
-    if (
-        isPaymentVerified(
-            data
-        )
-    ) {
-
-        handlePaymentVerified(
-            currentOrder
-        );
-
-        return;
-    }
-
-
-    /*
-     * PAYMENT FAILED
-     */
-
-    if (
-        isPaymentFailed(
-            data
-        )
-    ) {
-
-        handlePaymentFailed(
-            currentOrder
-        );
-
-        return;
-    }
-}
-
-
-/* ==========================================
+/* =========================================================
    PAYMENT SUCCESS
-========================================== */
+========================================================= */
 
 function handlePaymentVerified(order) {
 
-    if (paymentFinished) {
+    if (
+        paymentFinished
+    ) {
+
         return;
     }
-
 
     paymentFinished =
         true;
 
+    if (
+        paymentTimeoutRedirect
+    ) {
 
-    stopPaymentTimers();
+        clearTimeout(
+            paymentTimeoutRedirect
+        );
 
+        paymentTimeoutRedirect =
+            null;
+    }
 
-    /*
-     * Payment succeeded.
-     *
-     * The admin has already verified
-     * and handled stock.
-     */
+    stopAllPaymentModules();
 
     clearCart();
 
     clearCheckoutSession();
 
+    clearPaymentSession();
 
-    if (successOrderId) {
+    if (
+        successOrderId
+    ) {
 
         successOrderId.textContent =
             order.orderId ||
-            currentOrderId;
+            currentOrderId ||
+            "—";
     }
 
-
-    if (successOrderTotal) {
+    if (
+        successOrderTotal
+    ) {
 
         successOrderTotal.textContent =
             formatPrice(
@@ -1059,224 +1132,140 @@ function handlePaymentVerified(order) {
             );
     }
 
-
     showOnly(
         paymentSuccess
     );
-}
-
-
-/* ==========================================
-   PAYMENT FAILED
-========================================== */
-
-function handlePaymentFailed(order) {
-
-    if (paymentFinished) {
-        return;
-    }
-
-
-    paymentFinished =
-        true;
-
-
-    stopPaymentTimers();
-
-
-    showPaymentError(
-        order.adminMessage ||
-        "Payment was not successful. Please contact support if you believe this is incorrect."
-    );
-}
-
-
-/* ==========================================
-   PAYMENT TIMEOUT
-==========================================
-
-   IMPORTANT:
-
-   We cannot cancel the order here because
-   the customer is not allowed to modify
-   orders after creation.
-
-   The admin can later cancel unpaid orders.
-
-========================================== */
-
-function handlePaymentTimeout() {
-
-    if (paymentFinished) {
-        return;
-    }
-
-
-    paymentFinished =
-        true;
-
-
-    stopPaymentTimers();
-
-
-    showOnly(
-        paymentRedirecting
-    );
-
 
     setTimeout(
         () => {
 
-            if (!currentOrderId) {
-
-                window.location.href =
-                    "orders.html";
-
-                return;
-            }
-
-
             window.location.href =
-                `orders.html?order=${encodeURIComponent(
-                    currentOrderId
-                )}`;
+                currentOrderId
+                    ? `orders.html?order=${encodeURIComponent(
+                        currentOrderId
+                    )}`
+                    : "orders.html";
 
         },
-        1800
+        2200
     );
 }
 
 
-/* ==========================================
-   TIMER
-========================================== */
+/* =========================================================
+   PAYMENT FAILED
+========================================================= */
 
-function startPaymentTimer() {
+function handlePaymentFailed(order) {
 
-    stopPaymentTimers();
+    if (
+        paymentFinished
+    ) {
 
-
-    const startTime =
-        Date.now();
-
-
-    function updateTimer() {
-
-        const elapsed =
-            Date.now() -
-            startTime;
-
-
-        const remaining =
-            Math.max(
-                0,
-                PAYMENT_TIMEOUT -
-                elapsed
-            );
-
-
-        const totalSeconds =
-            Math.ceil(
-                remaining / 1000
-            );
-
-
-        const minutes =
-            Math.floor(
-                totalSeconds / 60
-            );
-
-
-        const seconds =
-            totalSeconds % 60;
-
-
-        if (paymentTimer) {
-
-            paymentTimer.textContent =
-                `${String(minutes).padStart(
-                    2,
-                    "0"
-                )}:${String(seconds).padStart(
-                    2,
-                    "0"
-                )}`;
-        }
-
-
-        if (
-            remaining <= 0
-        ) {
-
-            clearInterval(
-                timerInterval
-            );
-
-            timerInterval =
-                null;
-        }
-    }
-
-
-    updateTimer();
-
-
-    timerInterval =
-        setInterval(
-            updateTimer,
-            1000
-        );
-
-
-    paymentTimeout =
-        setTimeout(
-            handlePaymentTimeout,
-            PAYMENT_TIMEOUT
-        );
-}
-
-
-/* ==========================================
-   STOP TIMERS
-========================================== */
-
-function stopPaymentTimers() {
-
-    if (timerInterval) {
-
-        clearInterval(
-            timerInterval
-        );
-
-        timerInterval =
-            null;
-    }
-
-
-    if (paymentTimeout) {
-
-        clearTimeout(
-            paymentTimeout
-        );
-
-        paymentTimeout =
-            null;
-    }
-}
-
-
-/* ==========================================
-   FIRESTORE LISTENER
-========================================== */
-
-function listenToOrder(orderId) {
-
-    if (!orderId) {
         return;
     }
 
+    paymentFinished =
+        true;
 
-    if (unsubscribeOrder) {
+    if (
+        paymentTimeoutRedirect
+    ) {
+
+        clearTimeout(
+            paymentTimeoutRedirect
+        );
+
+        paymentTimeoutRedirect =
+            null;
+    }
+
+    stopAllPaymentModules();
+
+    showPaymentError(
+
+        order.adminMessage ||
+
+        "Payment was not successful. Please contact support."
+
+    );
+}
+
+
+/* =========================================================
+   FAST COIN PAYMENT SUCCESS
+========================================================= */
+
+window.addEventListener(
+    "fastcoin-payment-success",
+    event => {
+
+        if (
+            paymentFinished ||
+            !currentOrderId ||
+            !currentOrder
+        ) {
+
+            return;
+        }
+
+        const result =
+            event?.detail ||
+            {};
+
+        if (
+            result.orderId &&
+            result.orderId !== currentOrderId
+        ) {
+
+            return;
+        }
+
+        currentOrder = {
+
+            ...currentOrder,
+
+            paymentMethod:
+                "fastcoin",
+
+            paymentStatus:
+                "paid",
+
+            paymentVerified:
+                true,
+
+            orderStatus:
+                "processing",
+
+            fastCoinAmount:
+                Number(
+                    result.coinsUsed
+                ) || 0,
+
+            fastCoinConversionRate:
+                Number(
+                    result.coinsPerRupee
+                ) || 0
+
+        };
+
+        handlePaymentVerified(
+            currentOrder
+        );
+
+    }
+);
+
+
+/* =========================================================
+   FIRESTORE ORDER LISTENER
+========================================================= */
+
+function listenToOrder(orderId) {
+
+    if (
+        unsubscribeOrder
+    ) {
 
         unsubscribeOrder();
 
@@ -1284,25 +1273,92 @@ function listenToOrder(orderId) {
             null;
     }
 
-
-    const orderRef =
-        doc(
-            db,
-            "orders",
-            orderId
-        );
-
+    if (!orderId) {
+        return;
+    }
 
     unsubscribeOrder =
         onSnapshot(
 
-            orderRef,
+            doc(
+                db,
+                "orders",
+                orderId
+            ),
 
             snapshot => {
 
-                handleOrderUpdate(
-                    snapshot
+                if (
+                    paymentFinished
+                ) {
+
+                    return;
+                }
+
+                if (
+                    !snapshot.exists()
+                ) {
+
+                    showPaymentError(
+                        "Your order could not be found."
+                    );
+
+                    return;
+                }
+
+                const data =
+                    snapshot.data();
+
+                if (
+                    currentUser &&
+                    data.userId &&
+                    data.userId !==
+                    currentUser.uid
+                ) {
+
+                    showPaymentError(
+                        "You do not have access to this order."
+                    );
+
+                    return;
+                }
+
+                currentOrder = {
+
+                    orderId,
+
+                    ...data
+
+                };
+
+                updateOrderSummary(
+                    currentOrder
                 );
+
+                if (
+                    isPaymentVerified(
+                        data
+                    )
+                ) {
+
+                    handlePaymentVerified(
+                        currentOrder
+                    );
+
+                    return;
+                }
+
+                if (
+                    isPaymentFailed(
+                        data
+                    )
+                ) {
+
+                    handlePaymentFailed(
+                        currentOrder
+                    );
+                }
+
             },
 
             error => {
@@ -1312,150 +1368,428 @@ function listenToOrder(orderId) {
                     error
                 );
 
-                /*
-                 * Do not automatically mark
-                 * the payment failed just because
-                 * the listener had a temporary
-                 * connection problem.
-                 */
+                if (
+                    !paymentFinished
+                ) {
+
+                    showPaymentError(
+                        "Unable to check payment status. Please try again."
+                    );
+                }
+
             }
+
         );
 }
 
 
-/* ==========================================
-   VIEW ORDER
-========================================== */
+/* =========================================================
+   PAYMENT METHOD SWITCHING
+========================================================= */
 
-viewOrderBtn?.addEventListener(
-    "click",
-    () => {
+function setPaymentMethod(method) {
 
-        if (!currentOrderId) {
+    /*
+     * Card payment has been disabled.
+     *
+     * Only UPI and FastCoin are allowed.
+     */
 
-            window.location.href =
-                "orders.html";
+    const allowedMethods = [
+
+        "upi",
+        "fastcoin"
+
+    ];
+
+    if (
+        !allowedMethods.includes(
+            method
+        )
+    ) {
+
+        return;
+    }
+
+    selectedPaymentMethod =
+        method;
+
+    paymentMethodButtons.forEach(
+        button => {
+
+            const active =
+                button.dataset.method ===
+                method;
+
+            button.classList.toggle(
+                "active",
+                active
+            );
+
+            button.setAttribute(
+                "aria-selected",
+                String(
+                    active
+                )
+            );
+
+        }
+    );
+
+    paymentMethodPanels.forEach(
+        panel => {
+
+            const panelMethod =
+                panel.dataset.method ??
+                panel.dataset.panel;
+
+            const active =
+                panelMethod ===
+                method;
+
+            panel.classList.toggle(
+                "active",
+                active
+            );
+
+            panel.classList.toggle(
+                "hidden",
+                !active
+            );
+
+        }
+    );
+
+
+    /* -----------------------------------------
+       UPI
+    ----------------------------------------- */
+
+    if (
+        method === "upi"
+    ) {
+
+        prepareQrPayment({
+
+            order:
+                currentOrder,
+
+            orderId:
+                currentOrderId
+
+        });
+    }
+
+
+    /* -----------------------------------------
+       FAST COIN
+    ----------------------------------------- */
+
+    if (
+        method === "fastcoin"
+    ) {
+
+        resetFastCoinPayment();
+
+        if (
+            currentUser
+        ) {
+
+            loadFastCoinBalance(
+                currentUser
+            );
+        }
+    }
+
+}
+
+
+/* =========================================================
+   STOP PAYMENT MODULES
+========================================================= */
+
+function stopAllPaymentModules() {
+
+    stopQrPayment();
+
+}
+
+
+/* =========================================================
+   METHOD BUTTONS
+========================================================= */
+
+paymentMethodButtons.forEach(
+    button => {
+
+        /*
+         * Extra protection:
+         * Card buttons are disabled even if
+         * accidentally left in the HTML.
+         */
+
+        if (
+            button.dataset.method ===
+            "card"
+        ) {
+
+            button.classList.add(
+                "hidden"
+            );
+
+            button.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            button.disabled =
+                true;
 
             return;
         }
 
+        button.addEventListener(
+            "click",
+            event => {
 
-        window.location.href =
-            `orders.html?order=${encodeURIComponent(
-                currentOrderId
-            )}`;
+                event.preventDefault();
+
+                setPaymentMethod(
+                    button.dataset.method
+                );
+
+            }
+        );
+
     }
 );
 
 
-/* ==========================================
-   ERROR BACK
-========================================== */
+/* =========================================================
+   HIDE CARD PANEL
+========================================================= */
+
+paymentMethodPanels.forEach(
+    panel => {
+
+        const panelMethod =
+            panel.dataset.method ??
+            panel.dataset.panel;
+
+        if (
+            panelMethod ===
+            "card"
+        ) {
+
+            panel.classList.add(
+                "hidden"
+            );
+
+            panel.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+        }
+
+    }
+);
+
+
+/* =========================================================
+   VIEW ORDER
+========================================================= */
+
+viewOrderBtn?.addEventListener(
+    "click",
+    event => {
+
+        event.preventDefault();
+
+        window.location.href =
+            currentOrderId
+                ? `orders.html?order=${encodeURIComponent(
+                    currentOrderId
+                )}`
+                : "orders.html";
+
+    }
+);
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
 
 paymentErrorBackBtn?.addEventListener(
     "click",
-    () => {
+    event => {
+
+        event.preventDefault();
 
         window.location.href =
             "cart.html";
+
     }
 );
 
 
-/* ==========================================
+/* =========================================================
+   QR MODULE
+========================================================= */
+
+initQrPayment({
+
+    getOrder:
+        () =>
+            currentOrder,
+
+    getOrderId:
+        () =>
+            currentOrderId,
+
+    onTimeout:
+        () => {
+
+            if (
+                paymentFinished
+            ) {
+
+                return;
+            }
+
+            stopAllPaymentModules();
+
+            showOnly(
+                paymentRedirecting
+            );
+
+            paymentTimeoutRedirect =
+                setTimeout(
+                    () => {
+
+                        window.location.href =
+                            currentOrderId
+                                ? `orders.html?order=${encodeURIComponent(
+                                    currentOrderId
+                                )}`
+                                : "orders.html";
+
+                    },
+                    5000
+                );
+
+        }
+
+});
+
+
+/* =========================================================
+   FAST COIN MODULE
+========================================================= */
+
+initFastCoinPayment();
+
+
+/* =========================================================
    INITIALIZE PAYMENT
-========================================== */
+========================================================= */
 
 async function initializePayment(user) {
 
-    if (paymentInitialized) {
+    if (
+        paymentInitialized
+    ) {
+
         return;
     }
-
 
     paymentInitialized =
         true;
 
+    currentUser =
+        user;
+
+    paymentFinished =
+        false;
 
     showOnly(
         paymentLoading
     );
-
 
     try {
 
         const cart =
             getCart();
 
+        if (
+            cart.length === 0
+        ) {
 
-        if (cart.length === 0) {
-
-            throw new Error(
+            showPaymentError(
                 "Your cart is empty."
             );
-        }
 
+            return;
+        }
 
         const params =
             new URLSearchParams(
                 window.location.search
             );
 
+        const orderFromUrl =
+            params.get(
+                "order"
+            );
 
-        const existingOrderId =
-            params.get("order");
 
-
-        /* ======================================
+        /* =============================================
            EXISTING ORDER
-        ====================================== */
+        ============================================= */
 
-        if (existingOrderId) {
+        if (
+            orderFromUrl
+        ) {
 
             currentOrderId =
-                existingOrderId;
-
+                orderFromUrl;
 
             const orderSnapshot =
                 await getDoc(
+
                     doc(
                         db,
                         "orders",
                         currentOrderId
                     )
-                );
 
+                );
 
             if (
                 !orderSnapshot.exists()
             ) {
 
-                throw new Error(
-                    "This order could not be found."
+                showPaymentError(
+                    "Your order could not be found."
                 );
-            }
 
+                return;
+            }
 
             const orderData =
                 orderSnapshot.data();
 
-
-            /*
-             * SECURITY
-             *
-             * Firestore rules also enforce
-             * this ownership check.
-             */
             if (
                 orderData.userId !==
                 user.uid
             ) {
 
-                throw new Error(
+                showPaymentError(
                     "You do not have access to this order."
                 );
-            }
 
+                return;
+            }
 
             currentOrder = {
 
@@ -1463,12 +1797,8 @@ async function initializePayment(user) {
                     currentOrderId,
 
                 ...orderData
+
             };
-
-
-            /*
-             * ALREADY PAID
-             */
 
             if (
                 isPaymentVerified(
@@ -1483,11 +1813,6 @@ async function initializePayment(user) {
                 return;
             }
 
-
-            /*
-             * ALREADY FAILED
-             */
-
             if (
                 isPaymentFailed(
                     orderData
@@ -1501,116 +1826,97 @@ async function initializePayment(user) {
                 return;
             }
 
-
-            /*
-             * Listen for admin verification.
-             */
-
-            listenToOrder(
-                currentOrderId
+            updateOrderSummary(
+                currentOrder
             );
-
 
             showOnly(
                 paymentSection
             );
 
-
-            updatePaymentDetails(
-                currentOrder
+            listenToOrder(
+                currentOrderId
             );
 
+            const qrPaymentExpired =
+                restoreQrPayment({
 
-            startPaymentTimer();
+                    order:
+                        currentOrder,
+
+                    orderId:
+                        currentOrderId
+
+                });
+
+            await loadFastCoinBalance(
+                user
+            );
+
+            if (
+                qrPaymentExpired
+            ) {
+
+                return;
+            }
+
+            setPaymentMethod(
+                selectedPaymentMethod
+            );
 
             return;
         }
 
 
-        /* ======================================
-           CREATE NEW ORDER
-        ====================================== */
+        /* =============================================
+           NEW ORDER
+        ============================================= */
 
-        const order =
+        currentOrder =
             await createOrder(
                 user
             );
 
-
         currentOrderId =
-            order.orderId;
+            currentOrder.orderId;
 
 
-        currentOrder = {
+        const newUrl =
+            new URL(
+                window.location.href
+            );
 
-            orderId:
-                order.orderId,
-
-            userId:
-                user.uid,
-
-            itemCount:
-                order.itemCount,
-
-            total:
-                order.total,
-
-            items:
-                order.orderItems,
-
-            deliveryInfo:
-                order.deliveryInfo,
-
-            paymentStatus:
-                "pending",
-
-            paymentVerified:
-                false,
-
-            orderStatus:
-                "pending",
-
-            stockHeld:
-                false,
-
-            stockReleased:
-                false
-        };
-
-
-        /*
-         * Put order ID in URL.
-         */
-
-        const newURL =
-            `${window.location.pathname}?order=${encodeURIComponent(
-                currentOrderId
-            )}`;
-
+        newUrl.searchParams.set(
+            "order",
+            currentOrderId
+        );
 
         window.history.replaceState(
             {},
             "",
-            newURL
+            newUrl
         );
 
 
-        updatePaymentDetails(
+        updateOrderSummary(
             currentOrder
         );
-
-
-        listenToOrder(
-            currentOrderId
-        );
-
 
         showOnly(
             paymentSection
         );
 
+        listenToOrder(
+            currentOrderId
+        );
 
-        startPaymentTimer();
+        await loadFastCoinBalance(
+            user
+        );
+
+        setPaymentMethod(
+            "upi"
+        );
 
 
     } catch (error) {
@@ -1620,21 +1926,26 @@ async function initializePayment(user) {
             error
         );
 
-
         showPaymentError(
+
             error?.message ||
-            "Unable to prepare your payment."
+
+            "Unable to prepare your payment. Please try again."
+
         );
     }
+
 }
 
 
-/* ==========================================
-   AUTHENTICATION
-========================================== */
+/* =========================================================
+   AUTH
+========================================================= */
 
 onAuthStateChanged(
+
     auth,
+
     async user => {
 
         if (!user) {
@@ -1642,7 +1953,6 @@ onAuthStateChanged(
             showPaymentError(
                 "Please login before making a payment."
             );
-
 
             setTimeout(
                 () => {
@@ -1654,32 +1964,84 @@ onAuthStateChanged(
                 1500
             );
 
-
             return;
         }
 
 
+        /*
+         * If this is an existing order URL,
+         * allow the existing-order flow to continue.
+         *
+         * Otherwise require the delivery-created
+         * payment session before creating a new order.
+         */
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const orderFromUrl =
+            params.get(
+                "order"
+            );
+
+        if (!orderFromUrl) {
+
+            if (
+                !requirePaymentSession()
+            ) {
+
+                return;
+            }
+        }
+
         await initializePayment(
             user
         );
+
     }
+
 );
 
 
-/* ==========================================
+/* =========================================================
    CLEANUP
-========================================== */
+========================================================= */
 
 window.addEventListener(
     "beforeunload",
     () => {
 
-        stopPaymentTimers();
-
-
-        if (unsubscribeOrder) {
+        if (
+            unsubscribeOrder
+        ) {
 
             unsubscribeOrder();
+
+            unsubscribeOrder =
+                null;
         }
+
+        stopAllPaymentModules();
+
     }
 );
+
+
+/* =========================================================
+   INITIAL UI
+========================================================= */
+
+showOnly(
+    paymentLoading
+);
+
+if (
+    upiId
+) {
+
+    upiId.textContent =
+        GAMEVAULT_UPI_ID;
+
+}

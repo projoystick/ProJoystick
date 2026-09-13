@@ -1,397 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment — PROJOYSTICK</title>
+    <meta name="description" content="Complete your PROJOYSTICK payment securely.">
 
-    <link
-        rel="stylesheet"
-        href="../style.css"
-    >
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/payment.css">
 
-    <link
-        rel="stylesheet"
-        href="../css/payment.css"
-    >
+    <link 
+        rel="preconnect" href="https://fonts.googleapis.com">
 
-    <link rel="icon" href="../images/webicon.png">
+    <link 
+        rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+    <link 
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <link 
+        rel="icon" 
+        href="../images/webicon.png">
 </head>
 
-
 <body>
+    <!-- NAVBAR — intentionally kept unchanged -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand-area">
+                <button type="button" class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+                <a href="../index.html" class="logo">
+                    <img src="/images/webicon.png" alt="Pro Joystick" class="logo-icon">
+                    <span class="logo-text">
+                        <span class="logo-pro">PRO</span>
+                        <span class="logo-joystick">JOYSTICK</span>
+                    </span>
+                </a>
+            </div>
 
-    <!-- ==========================================
-         PAYMENT PAGE
-    =========================================== -->
+            <div class="menu-dropdown" id="menuDropdown" aria-hidden="true">
+                <a href="../index.html"><span class="span-home">🏠</span> Home</a>
+                <a href="games.html"><span>🎮</span> Games</a>
+                <a href="shop.html"><span>🛒</span> Shop</a>
+                <a href="wishlist.html"><span>❤️</span> Wishlist</a>
+                <a href="orders.html"><span>📦</span> Orders</a>
+            </div>
+
+            <nav class="nav-links">
+                <a href="../index.html">Home</a>
+                <a href="games.html">Games</a>
+                <a href="shop.html">Shop</a>
+                <a href="wishlist.html">Wishlist</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="search-btn" aria-label="Search" type="button"><span>⌕</span></button>
+
+                <a class="coin-btn" href="coins.html" aria-label="Fast Coins">
+                    <span class="coin-icon">🪙</span>
+                    <span class="coin-balance">0</span>
+                </a>
+
+                <a href="cart.html" class="cart-btn" aria-label="Shopping cart">
+                    <span class="cart-icon">🛒</span>
+                    <span class="cart-count">0</span>
+                </a>
+
+                <a href="login.html" class="login-btn">Login</a>
+                <a href="register.html" class="signup-btn">Sign Up</a>
+            </div>
+        </div>
+    </header>
 
     <main class="payment-page">
-
-        <div
-            class="payment-container"
-            id="paymentContainer"
-        >
-
-            <!-- ======================================
-                 LOADING
-            ======================================= -->
-
-            <section
-                class="payment-state"
-                id="paymentLoading"
-            >
-
-                <div class="payment-spinner"></div>
-
-                <h1>
-                    Preparing Payment
-                </h1>
-
-                <p>
-                    Please wait while we prepare your order.
-                </p>
-
+        <div class="payment-container">
+            <section class="payment-header">
+                <span class="payment-label">PROJOYSTICK PAYMENT</span>
+                <h1>Complete Your Payment</h1>
+                <p>Pay securely using UPI, Card, or Fast Coin.</p>
             </section>
 
+            <section id="paymentLoading" class="payment-state">
+                <div class="payment-spinner"></div>
+                <h1>Preparing Payment</h1>
+                <p>Verifying your cart and preparing your order.</p>
+            </section>
 
-            <!-- ======================================
-                 PAYMENT
-            ======================================= -->
-
-            <section
-                class="payment-section hidden"
-                id="paymentSection"
-            >
-
-                <!-- ==================================
-                     PAYMENT HEADER
-                =================================== -->
-
-                <div class="payment-header">
-
-                    <span class="payment-label">
-                        PROJOYSTICK PAYMENT
-                    </span>
-
-                    <h1>
-                        Complete Your Payment
-                    </h1>
-
-                    <p>
-                        Scan the QR code or use the UPI ID below
-                        to complete your payment.
-                    </p>
-
-                </div>
-
-
-                <!-- ==================================
-                     ORDER SUMMARY
-                =================================== -->
-
-                <div class="payment-order-card">
-
-                    <div>
-
-                        <span>
-                            Order ID
-                        </span>
-
-                        <strong id="paymentOrderId">
-                            —
-                        </strong>
-
-                    </div>
-
-
-                    <div>
-
-                        <span>
-                            Items
-                        </span>
-
-                        <strong id="paymentItemCount">
-                            0
-                        </strong>
-
-                    </div>
-
-
-                    <div>
-
-                        <span>
-                            Amount
-                        </span>
-
-                        <strong id="paymentTotal">
-                            ₹0
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ==================================
-                     QR PAYMENT
-                =================================== -->
-
-                <div class="payment-card">
-
-
-                    <!-- QR TEXT -->
-
-                    <div class="payment-card-content">
-
-                        <span class="payment-card-label">
-                            SCAN & PAY
-                        </span>
-
-                        <h2>
-                            Pay using UPI
-                        </h2>
-
-                        <p class="payment-instruction">
-                            Open your UPI app and scan the QR code
-                            to make the payment.
-                        </p>
-
-                    </div>
-
-
-                    <!-- ==================================
-                         QR IMAGE - SEPARATE BOX
-                    =================================== -->
-
-                    <div class="payment-qr-wrapper">
-
-                        <img
-                            src="../images/scan.jpg"
-                            alt="PROJOYSTICK UPI QR Code"
-                            id="paymentQR"
-                        >
-
-                    </div>
-
-
-                    <!-- ==================================
-                         UPI ID
-                    =================================== -->
-
-                    <div class="upi-box">
-
-                        <div class="upi-info">
-
-                            <span>
-                                UPI ID
-                            </span>
-
-                            <strong id="upiId">
-                                YOUR-UPI-ID@upi
-                            </strong>
-
+            <section id="paymentSection" class="hidden">
+                <div class="payment-method-layout">
+                    <aside class="payment-methods-card">
+                        <div class="payment-methods-heading">
+                            <span>PAYMENT METHOD</span>
+                            <strong>Choose how to pay</strong>
                         </div>
 
-
-                        <button
-                            type="button"
-                            id="copyUpiBtn"
-                        >
-                            COPY
+                        <button type="button" class="payment-method active" data-method="upi">
+                            <span class="method-icon">↯</span>
+                            <span class="method-copy"><strong>UPI</strong><small>Pay by any UPI app</small></span>
+                            <span class="method-radio"></span>
                         </button>
 
+                        <button type="button" class="payment-method" data-method="card">
+                            <span class="method-icon">▣</span>
+                            <span class="method-copy"><strong>Credit / Debit Card</strong><small>Visa, Mastercard, RuPay</small></span>
+                            <span class="method-radio"></span>
+                        </button>
+
+                        <button type="button" class="payment-method" data-method="fastcoin">
+                            <span class="method-icon">🪙</span>
+                            <span class="method-copy"><strong>Fast Coin</strong><small>Pay using your Fast Coin balance</small></span>
+                            <span class="method-radio"></span>
+                        </button>
+                    </aside>
+
+                    <div class="payment-method-content">
+                        <div class="payment-order-card">
+                            <div><span>Order ID</span><strong id="paymentOrderId">—</strong></div>
+                            <div><span>Items</span><strong id="paymentItemCount">0</strong></div>
+                            <div><span>Amount</span><strong id="paymentTotal">₹0</strong></div>
+                        </div>
+
+                        <!-- UPI -->
+                        <div class="payment-card method-panel" id="upiPaymentCard" data-panel="upi">
+                            <div class="upi-reveal" id="upiReveal">
+                                <div class="upi-lock-icon">🔒</div>
+                                <span class="upi-reveal-label">PAYMENT READY</span>
+                                <h2>Your UPI Payment Is Ready</h2>
+                                <p>Payment details are protected until you are ready to continue.</p>
+                                <button type="button" class="upi-reveal-btn" id="upiRevealBtn"><span>◉</span> Reveal UPI Payment</button>
+                                <small>Tap once to reveal the QR and start the 4-minute payment timer.</small>
+                            </div>
+
+                            <div class="upi-active hidden" id="upiActive">
+                                <div class="payment-card-content">
+                                    <span class="payment-card-label">UPI PAYMENT</span>
+                                    <h2>Scan &amp; Pay</h2>
+                                    <p class="payment-instruction">Scan the QR code using any supported UPI app and complete the payment for the exact amount.</p>
+                                </div>
+
+                                <div class="payment-qr-wrapper">
+                                    <div id="upiQr" class="upi-qr" aria-label="UPI payment QR code"></div>
+                                </div>
+
+                                <div class="upi-box">
+                                    <div class="upi-info"><span>UPI ID</span><strong id="upiId">fullmast592@okhdfcbank</strong></div>
+                                    <button type="button" id="copyUpiBtn">COPY</button>
+                                </div>
+
+                                <div class="payment-status-card">
+                                    <div class="payment-status-spinner"></div>
+                                    <div class="payment-status-content">
+                                        <strong>Checking payment</strong>
+                                        <p>Please complete the payment. Payment verification is in progress.</p>
+                                    </div>
+                                    <div class="payment-timer" id="paymentTimer">04:00</div>
+                                </div>
+
+                                <p class="payment-warning">Do not close or refresh this page while your payment is being checked.</p>
+                            </div>
+                        </div>
+
+                        <!-- CARD -->
+                        <div class="payment-card method-panel hidden" id="cardPaymentCard" data-panel="card">
+                            <div class="method-panel-header">
+                                <span class="payment-card-label">CARD PAYMENT</span>
+                                <h2>Credit / Debit Card</h2>
+                                <p>Enter your card details for validation. Raw card details are never stored in Firebase.</p>
+                            </div>
+
+                            <form id="cardPaymentForm" class="card-payment-form" novalidate>
+                                <label class="payment-field">
+                                    <span>Card Number</span>
+                                    <div class="card-number-wrap">
+                                        <input id="cardNumber" type="text" inputmode="numeric" autocomplete="cc-number" maxlength="19" placeholder="1234 5678 9012 3456">
+                                        <span id="cardBrand" class="card-brand">CARD</span>
+                                    </div>
+                                    <small id="cardNumberError" class="field-error"></small>
+                                </label>
+
+                                <div class="card-fields-row">
+                                    <label class="payment-field">
+                                        <span>Valid Thru</span>
+                                        <input id="cardExpiry" type="text" inputmode="numeric" autocomplete="cc-exp" maxlength="7" placeholder="MM / YY">
+                                        <small id="cardExpiryError" class="field-error"></small>
+                                    </label>
+
+                                    <label class="payment-field">
+                                        <span>CVV</span>
+                                        <div class="cvv-wrap">
+                                            <input id="cardCvv" type="password" inputmode="numeric" autocomplete="cc-csc" maxlength="4" placeholder="•••">
+                                            <span class="cvv-help" title="3 or 4 digit security code">?</span>
+                                        </div>
+                                        <small id="cardCvvError" class="field-error"></small>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="card-pay-btn" id="cardPayBtn">Pay <span id="cardPayAmount">₹0</span></button>
+                                <p class="card-security-note">🔒 Card details are not saved in Firebase. A real card charge requires a PCI-compliant payment gateway.</p>
+                                <div id="cardGatewayMessage" class="card-gateway-message hidden"></div>
+                            </form>
+                        </div>
+
+                        <!-- FAST COIN -->
+                        <div class="payment-card method-panel hidden" id="fastCoinPaymentCard" data-panel="fastcoin">
+                            <div class="fastcoin-panel">
+                                <div class="fastcoin-icon">🪙</div>
+                                <span class="payment-card-label">FAST COIN</span>
+                                <h2>Pay with Fast Coins</h2>
+                                <p>Use the Fast Coin balance attached to your account.</p>
+
+                                <div class="fastcoin-balance-card">
+                                    <span>Available Fast Coins</span>
+                                    <strong id="fastCoinBalance">0</strong>
+                                </div>
+
+                                <div class="fastcoin-total-row">
+                                    <span>Conversion rate</span>
+                                    <strong id="fastCoinRateText">Loading…</strong>
+                                </div>
+
+                                <div class="fastcoin-total-row">
+                                    <span>Coins needed</span>
+                                    <strong id="fastCoinRequired">0</strong>
+                                </div>
+
+                                <div class="fastcoin-total-row">
+                                    <span>Order total</span>
+                                    <strong id="fastCoinTotal">₹0</strong>
+                                </div>
+
+                                <button type="button" class="fastcoin-pay-btn" id="fastCoinPayBtn">Pay with Fast Coins</button>
+                                <a href="coins.html" class="fastcoin-link">Get / manage Fast Coins →</a>
+                                <div id="fastCoinInsufficient" class="card-gateway-message hidden"></div>
+                                <div id="fastCoinMessage" class="card-gateway-message hidden" role="alert"></div>
+                            </div>
+                        </div>
                     </div>
 
+                    <aside class="payment-summary-card">
+                        <div class="summary-heading"><span>ORDER SUMMARY</span><strong>Your purchase</strong></div>
+                        <div class="summary-line"><span>MRP (incl. of all taxes)</span><strong id="summaryMrp">₹0</strong></div>
+
+                        <button type="button" class="summary-toggle" data-summary="fees"><span>Fees</span><span>⌄</span></button>
+                        <div class="summary-detail hidden" id="summaryFees"><span>Protect Promise Fee</span><strong>₹0</strong></div>
+
+                        <button type="button" class="summary-toggle" data-summary="discounts"><span>Discounts</span><span>⌄</span></button>
+                        <div class="summary-detail discount hidden" id="summaryDiscounts"><span>MRP Discount</span><strong>−₹0</strong></div>
+
+                        <div class="summary-total"><span>Total Amount</span><strong id="summaryTotal">₹0</strong></div>
+
+                        <div class="payment-offer-card">
+                            <strong>₹50 Off</strong>
+                            <p>Claim available payment offers when eligible.</p>
+                            <small>Fast • Secure • Simple</small>
+                        </div>
+                    </aside>
                 </div>
-
-
-                <!-- ==================================
-                     PAYMENT STATUS
-                =================================== -->
-
-                <div
-                    class="payment-status-card"
-                    id="paymentStatusCard"
-                >
-
-                    <div class="payment-status-spinner"></div>
-
-                    <div class="payment-status-content">
-
-                        <strong>
-                            Waiting for payment confirmation
-                        </strong>
-
-                        <p>
-                            Complete your payment.
-                            We are checking your payment status.
-                        </p>
-
-                    </div>
-
-                    <div
-                        class="payment-timer"
-                        id="paymentTimer"
-                    >
-                        02:00
-                    </div>
-
-                </div>
-
-
-                <!-- ==================================
-                     WARNING
-                =================================== -->
-
-                <p class="payment-warning">
-                    Do not close this page while your payment
-                    is being processed.
-                </p>
-
             </section>
 
-
-            <!-- ======================================
-                 PAYMENT SUCCESS
-            ======================================= -->
-
-            <section
-                class="payment-state payment-success hidden"
-                id="paymentSuccess"
-            >
-
-                <div class="payment-success-icon">
-                    ✓
-                </div>
-
-                <span class="payment-label">
-                    PAYMENT VERIFIED
-                </span>
-
-                <h1>
-                    Order Completed
-                </h1>
-
-                <p>
-                    Your payment has been successfully verified.
-                </p>
-
-                <div class="success-order-info">
-
-                    <span>
-                        Order ID
-                    </span>
-
-                    <strong id="successOrderId">
-                        —
-                    </strong>
-
-                </div>
-
-                <div class="success-order-info">
-
-                    <span>
-                        Amount
-                    </span>
-
-                    <strong id="successOrderTotal">
-                        ₹0
-                    </strong>
-
-                </div>
-
-                <button
-                    type="button"
-                    class="primary-btn"
-                    id="viewOrderBtn"
-                >
-                    View Order →
-                </button>
-
+            <section id="paymentSuccess" class="payment-success payment-state hidden">
+                <div class="payment-success-icon">✓</div>
+                <span class="payment-label">PAYMENT VERIFIED</span>
+                <h1>Payment Successful</h1>
+                <p>Your payment has been verified successfully. Your order is now being processed.</p>
+                <div class="success-order-info"><span>Order ID</span><strong id="successOrderId">—</strong></div>
+                <div class="success-order-info"><span>Total</span><strong id="successOrderTotal">₹0</strong></div>
+                <button type="button" id="viewOrderBtn" class="primary-btn">View Order →</button>
             </section>
 
-
-            <!-- ======================================
-                 REDIRECTING
-            ======================================= -->
-
-            <section
-                class="payment-state hidden"
-                id="paymentRedirecting"
-            >
-
+            <section id="paymentRedirecting" class="payment-state hidden">
                 <div class="payment-spinner"></div>
-
-                <h1>
-                    Payment Verification Taking Longer
-                </h1>
-
-                <p>
-                    Your order has been saved.
-                    Verification is taking a little longer.
-                </p>
-
-                <p>
-                    Redirecting you to My Orders...
-                </p>
-
+                <h1>Payment Window Expired</h1>
+                <p>The payment verification window has ended. We are taking you to your orders.</p>
             </section>
 
-
-            <!-- ======================================
-                 ERROR
-            ======================================= -->
-
-            <section
-                class="payment-state payment-error hidden"
-                id="paymentError"
-            >
-
-                <div class="payment-error-icon">
-                    !
-                </div>
-
-                <h1>
-                    Something Went Wrong
-                </h1>
-
-                <p id="paymentErrorMessage">
-                    We were unable to prepare your payment.
-                </p>
-
-                <button
-                    type="button"
-                    class="primary-btn"
-                    id="paymentErrorBackBtn"
-                >
-                    Back to Cart
-                </button>
-
+            <section id="paymentError" class="payment-error payment-state hidden">
+                <div class="payment-error-icon">!</div>
+                <h1>Payment Unavailable</h1>
+                <p id="paymentErrorMessage">Unable to prepare your payment.</p>
+                <button type="button" id="paymentErrorBackBtn" class="primary-btn">Back to Cart</button>
             </section>
-
         </div>
-
     </main>
 
-
-    <script
-        type="module"
-        src="../js/payment.js"
-    ></script>
-
-    <script 
-        type="module"
-        src="../js/script.js"
-        ></script>
-
+    <script type="module" src="../js/script.js"></script>
+    <script type="module" src="../js/payment.js"></script>
 </body>
-
 </html>
