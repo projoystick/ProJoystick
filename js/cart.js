@@ -1,6 +1,7 @@
 /* ==========================================
    GAMEVAULT - CART PAGE
    Current Firestore Price + Stock Sync
+   Item Type = Maximum Quantity 1
 ========================================== */
 
 import { db } from "./firebase.js";
@@ -103,6 +104,67 @@ function formatPrice(price) {
     }
 
     return `₹${value.toLocaleString("en-IN")}`;
+
+}
+
+
+/* ==========================================
+   PRODUCT TYPE
+========================================== */
+
+/*
+ * Currency products:
+ *   Multiple quantities allowed.
+ *
+ * Item products:
+ *   Maximum quantity = 1.
+ *
+ * Legacy "product" type is treated as "item"
+ * for backward compatibility.
+ */
+
+function getProductType(product) {
+
+    const type =
+        String(
+            product?.type || ""
+        )
+            .trim()
+            .toLowerCase();
+
+    if (
+        type === "currency" ||
+        type === "coin" ||
+        type === "coins"
+    ) {
+
+        return "currency";
+
+    }
+
+    if (
+        type === "item" ||
+        type === "product"
+    ) {
+
+        return "item";
+
+    }
+
+    /*
+     * Default unknown products to item
+     * so they cannot accidentally be
+     * purchased in unlimited quantity.
+     */
+
+    return "item";
+
+}
+
+
+function isSinglePurchaseItem(product) {
+
+    return getProductType(product) === "item";
 
 }
 
@@ -305,6 +367,7 @@ async function syncCartWithFirestore() {
                     {
                         id:
                             productDoc.id,
+
                         ...productDoc.data()
                     }
                 );
@@ -318,6 +381,10 @@ async function syncCartWithFirestore() {
         let stockChanged = false;
 
         let priceChanged = false;
+
+        let typeChanged = false;
+
+        let quantityChanged = false;
 
 
         cart.forEach(item => {
@@ -387,6 +454,14 @@ async function syncCartWithFirestore() {
 
 
             /*
+             * CURRENT PRODUCT TYPE
+             */
+
+            const currentType =
+                getProductType(product);
+
+
+            /*
              * CHECK PRICE CHANGE
              */
 
@@ -415,7 +490,23 @@ async function syncCartWithFirestore() {
 
 
             /*
-             * KEEP CURRENT QUANTITY
+             * CHECK TYPE CHANGE
+             */
+
+            if (
+                String(item.type || "")
+                    .trim()
+                    .toLowerCase() !==
+                currentType
+            ) {
+
+                typeChanged = true;
+
+            }
+
+
+            /*
+             * CURRENT QUANTITY
              */
 
             let quantity =
@@ -426,14 +517,33 @@ async function syncCartWithFirestore() {
 
 
             /*
-             * LIMIT QUANTITY TO CURRENT STOCK
-             *
-             * If stock is 0, keep quantity as 1
-             * temporarily so the item remains visible
-             * as OUT OF STOCK.
+             * ITEM TYPE:
+             * Maximum quantity is ALWAYS 1.
              */
 
             if (
+                currentType === "item" &&
+                quantity !== 1
+            ) {
+
+                quantity = 1;
+
+                quantityChanged = true;
+
+            }
+
+
+            /*
+             * LIMIT CURRENCY QUANTITY
+             * TO CURRENT STOCK.
+             *
+             * If stock is 0, keep quantity as 1
+             * temporarily so the item remains
+             * visible as OUT OF STOCK.
+             */
+
+            if (
+                currentType === "currency" &&
                 currentStock > 0 &&
                 quantity > currentStock
             ) {
@@ -441,7 +551,7 @@ async function syncCartWithFirestore() {
                 quantity =
                     currentStock;
 
-                stockChanged = true;
+                quantityChanged = true;
 
             }
 
@@ -469,6 +579,9 @@ async function syncCartWithFirestore() {
                 stock:
                     currentStock,
 
+                type:
+                    currentType,
+
                 quantity:
                     quantity,
 
@@ -482,12 +595,14 @@ async function syncCartWithFirestore() {
 
 
         /*
-         * Save if anything changed
+         * SAVE IF ANYTHING CHANGED
          */
 
         if (
             stockChanged ||
             priceChanged ||
+            typeChanged ||
+            quantityChanged ||
             updatedCart.length !== cart.length
         ) {
 
@@ -536,6 +651,45 @@ function updateItemQuantity(
         cart[index];
 
 
+    /*
+     * PRODUCT TYPE
+     */
+
+    const productType =
+        getProductType(item);
+
+
+    /*
+     * ITEM TYPE:
+     * ONLY ONE CAN BE PURCHASED.
+     */
+
+    if (
+        productType === "item" &&
+        Number(requestedQuantity) > 1
+    ) {
+
+        item.quantity = 1;
+
+        saveCart(cart);
+
+        updateCartCount();
+
+        renderCart();
+
+        showCartNotification(
+            `${item.name || "This item"} can only be purchased once`
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * CURRENT STOCK
+     */
+
     const stock =
         Math.max(
             0,
@@ -559,6 +713,32 @@ function updateItemQuantity(
 
     }
 
+
+    /*
+     * ITEM TYPE:
+     * Always force quantity to 1.
+     */
+
+    if (
+        productType === "item"
+    ) {
+
+        item.quantity = 1;
+
+        saveCart(cart);
+
+        updateCartCount();
+
+        renderCart();
+
+        return;
+
+    }
+
+
+    /*
+     * CURRENCY QUANTITY
+     */
 
     let quantity =
         Number(requestedQuantity);
@@ -750,6 +930,10 @@ function renderCart() {
     cart.forEach(
         (item, index) => {
 
+            /*
+             * CURRENT QUANTITY
+             */
+
             const quantity =
                 Math.max(
                     1,
@@ -757,9 +941,17 @@ function renderCart() {
                 );
 
 
+            /*
+             * CURRENT UNIT PRICE
+             */
+
             const unitPrice =
                 Number(item.price) || 0;
 
+
+            /*
+             * CURRENT STOCK
+             */
 
             const stock =
                 Math.max(
@@ -768,13 +960,56 @@ function renderCart() {
                 );
 
 
+            /*
+             * PRODUCT TYPE
+             */
+
+            const productType =
+                getProductType(item);
+
+
+            const isSinglePurchase =
+                productType === "item";
+
+
+            /*
+             * OUT OF STOCK
+             */
+
             const outOfStock =
                 stock <= 0;
 
 
+            /*
+             * STOCK LIMIT
+             */
+
             const atStockLimit =
                 stock > 0 &&
                 quantity >= stock;
+
+
+            /*
+             * ITEM TYPE LIMIT
+             */
+
+            const quantityLimitReached =
+                isSinglePurchase ||
+                atStockLimit;
+
+
+            /*
+             * MAXIMUM INPUT VALUE
+             */
+
+            const maximumQuantity =
+                isSinglePurchase
+                    ? 1
+                    : (
+                        stock > 0
+                            ? stock
+                            : 1
+                    );
 
 
             itemsHTML += `
@@ -881,11 +1116,7 @@ function renderCart() {
                             <input
                                 type="number"
                                 min="1"
-                                max="${
-                                    stock > 0
-                                        ? stock
-                                        : 1
-                                }"
+                                max="${maximumQuantity}"
                                 value="${quantity}"
                                 data-quantity-input
                                 data-quantity-index="${index}"
@@ -907,7 +1138,7 @@ function renderCart() {
                                 data-quantity-index="${index}"
                                 aria-label="Increase quantity"
                                 ${
-                                    atStockLimit ||
+                                    quantityLimitReached ||
                                     outOfStock
                                         ? "disabled"
                                         : ""
@@ -1154,6 +1385,38 @@ function renderCart() {
                 getCart();
 
 
+            /*
+             * Make absolutely sure no item
+             * has a quantity greater than 1.
+             */
+
+            const invalidItemQuantity =
+                updatedCart.some(
+                    item =>
+                        getProductType(item) === "item" &&
+                        Number(item.quantity) > 1
+                );
+
+
+            if (invalidItemQuantity) {
+
+                await syncCartWithFirestore();
+
+                renderCart();
+
+                showCartNotification(
+                    "Some items can only be purchased once"
+                );
+
+                return;
+
+            }
+
+
+            /*
+             * OUT OF STOCK
+             */
+
             const outOfStock =
                 updatedCart.some(
                     item =>
@@ -1174,6 +1437,10 @@ function renderCart() {
 
             }
 
+
+            /*
+             * CHECK STOCK LIMIT
+             */
 
             const exceedsStock =
                 updatedCart.some(
@@ -1196,6 +1463,10 @@ function renderCart() {
 
             }
 
+
+            /*
+             * CONTINUE TO DELIVERY
+             */
 
             window.location.href =
                 "delivery.html";
@@ -1222,7 +1493,8 @@ async function initializeCart() {
 
 
     /*
-     * Get current prices and stock
+     * Get current prices, stock,
+     * product type and information
      * from Firestore.
      */
 
