@@ -1,6 +1,6 @@
 /* ==========================================
    GAMEVAULT - GLOBAL JAVASCRIPT
-   CART + SEARCH + AUTHENTICATION
+   CART + AUTHENTICATION
    Works from:
    /index.html
    /pages/*.html
@@ -140,7 +140,8 @@ function updateCartCount() {
     const itemCount =
         cart.reduce(
             (total, item) =>
-                total + Math.max(
+                total +
+                Math.max(
                     1,
                     Number(item.quantity) || 1
                 ),
@@ -166,7 +167,9 @@ function updateCartCount() {
 function showNotification(message) {
 
     const existing =
-        document.querySelector(".notification");
+        document.querySelector(
+            ".notification"
+        );
 
     if (existing) {
         existing.remove();
@@ -278,13 +281,16 @@ function addProductToCart(product) {
             product.id,
 
         name:
-            product.name || "Unnamed Product",
+            product.name ||
+            "Unnamed Product",
 
         game:
-            product.game || "GAME",
+            product.game ||
+            "GAME",
 
         amount:
-            product.amount || "",
+            product.amount ||
+            "",
 
         price:
             Number.isFinite(
@@ -294,10 +300,13 @@ function addProductToCart(product) {
                 : 0,
 
         image:
-            product.image || "",
+            product.image ||
+            "",
 
         stock:
-            Number.isFinite(Number(product.stock))
+            Number.isFinite(
+                Number(product.stock)
+            )
                 ? Number(product.stock)
                 : 0,
 
@@ -314,14 +323,18 @@ function addProductToCart(product) {
 
     updateCartCount();
 
+
     window.dispatchEvent(
-    new CustomEvent("gamevault-cart-updated")
-);
+        new CustomEvent(
+            "gamevault-cart-updated"
+        )
+    );
 
 
     showNotification(
         `${product.name} added to cart`
     );
+
 
     return true;
 
@@ -350,9 +363,14 @@ document.addEventListener(
         event.preventDefault();
         event.stopPropagation();
 
-        if (button.dataset.inCart === "true") {
 
-            window.location.href = paths.cart;
+        if (
+            button.dataset.inCart === "true"
+        ) {
+
+            window.location.href =
+                paths.cart;
+
             return;
 
         }
@@ -379,9 +397,9 @@ document.addEventListener(
 
 
         const card =
-        button.closest(
-            ".home-product-card, .product-card, .shop-product-card, .product-details"
-        );
+            button.closest(
+                ".home-product-card, .product-card, .shop-product-card, .product-details"
+            );
 
 
         if (!card) {
@@ -396,7 +414,9 @@ document.addEventListener(
 
 
         const name =
-            card.querySelector("h3, h1")
+            card.querySelector(
+                "h3, h1"
+            )
                 ?.textContent
                 .trim()
             ||
@@ -451,51 +471,66 @@ document.addEventListener(
 
 
         const image =
-            imageElement?.src || "";
+            imageElement?.src ||
+            "";
 
 
         const stock =
-            Number(button.dataset.stock);
+            Number(
+                button.dataset.stock
+            );
 
 
-        const wasAdded = addProductToCart({
+        const wasAdded =
+            addProductToCart({
 
-            id:
-                productId,
+                id:
+                    productId,
 
-            name:
-                name,
+                name:
+                    name,
 
-            game:
-                game,
+                game:
+                    game,
 
-            amount:
-                amount,
+                amount:
+                    amount,
 
-            price:
-                Number.isFinite(price)
-                    ? price
-                    : 0,
+                price:
+                    Number.isFinite(price)
+                        ? price
+                        : 0,
 
-            image:
-                image,
+                image:
+                    image,
 
-            stock:
-                Number.isFinite(stock)
-                    ? stock
-                    : 0
+                stock:
+                    Number.isFinite(stock)
+                        ? stock
+                        : 0
 
-        });
+            });
 
-        if (button.closest(".product-details")) {
 
-            button.textContent = "GO TO CART";
-            button.dataset.inCart = "true";
-            button.disabled = false;
+        if (
+            button.closest(
+                ".product-details"
+            )
+        ) {
+
+            button.textContent =
+                "GO TO CART";
+
+            button.dataset.inCart =
+                "true";
+
+            button.disabled =
+                false;
 
             return;
 
         }
+
 
         if (!wasAdded) {
             return;
@@ -538,7 +573,9 @@ document.addEventListener(
 ========================================== */
 
 const cartButton =
-    document.querySelector(".cart-btn");
+    document.querySelector(
+        ".cart-btn"
+    );
 
 
 if (cartButton) {
@@ -559,337 +596,13 @@ if (cartButton) {
 
 
 /* ==========================================
-   SEARCH BUTTON
-========================================== */
-
-const searchButton =
-    document.querySelector(".search-btn");
-
-
-if (searchButton) {
-
-    searchButton.addEventListener(
-        "click",
-        () => {
-
-            const existingSearch =
-                document.querySelector(
-                    ".search-overlay"
-                );
-
-
-            if (existingSearch) {
-
-                existingSearch.classList.remove(
-                    "active"
-                );
-
-
-                setTimeout(() => {
-
-                    existingSearch.remove();
-
-                }, 250);
-
-                return;
-
-            }
-
-
-            const overlay =
-                document.createElement("div");
-
-
-            overlay.className =
-                "search-overlay";
-
-
-            overlay.innerHTML = `
-
-                <div class="search-box">
-
-                    <button
-                        class="close-search"
-                        type="button"
-                    >
-                        ×
-                    </button>
-
-                    <span class="search-label">
-                        SEARCH GAMEVAULT
-                    </span>
-
-                    <input
-                        type="text"
-                        class="search-input"
-                        placeholder="Search games, currency, items..."
-                        autocomplete="off"
-                    >
-
-                    <div class="search-results"></div>
-
-                </div>
-
-            `;
-
-
-            document.body.appendChild(
-                overlay
-            );
-
-
-            requestAnimationFrame(() => {
-
-                overlay.classList.add(
-                    "active"
-                );
-
-            });
-
-
-            const input =
-                overlay.querySelector(
-                    ".search-input"
-                );
-
-
-            const closeButton =
-                overlay.querySelector(
-                    ".close-search"
-                );
-
-
-            const results =
-                overlay.querySelector(
-                    ".search-results"
-                );
-
-
-            input.focus();
-
-
-            function closeSearch() {
-
-                overlay.classList.remove(
-                    "active"
-                );
-
-
-                setTimeout(() => {
-
-                    overlay.remove();
-
-                }, 250);
-
-            }
-
-
-            closeButton.addEventListener(
-                "click",
-                closeSearch
-            );
-
-
-            overlay.addEventListener(
-                "click",
-                event => {
-
-                    if (
-                        event.target === overlay
-                    ) {
-
-                        closeSearch();
-
-                    }
-
-                }
-            );
-
-
-            input.addEventListener(
-                "input",
-                () => {
-
-                    const query =
-                        input.value
-                            .trim()
-                            .toLowerCase();
-
-
-                    if (!query) {
-
-                        results.innerHTML =
-                            "";
-
-                        return;
-
-                    }
-
-
-                    const products =
-                        document.querySelectorAll(
-                            ".product-card, .home-product-card"
-                        );
-
-
-                    const games =
-                        document.querySelectorAll(
-                            ".game-card, .home-game-card"
-                        );
-
-
-                    let resultHTML =
-                        "";
-
-
-                    /* PRODUCTS */
-
-                    products.forEach(
-                        product => {
-
-                            const name =
-                                product.querySelector(
-                                    "h3"
-                                )
-                                    ?.textContent
-                                    .trim()
-                                ||
-                                "";
-
-
-                            const game =
-                                product.querySelector(
-                                    ".product-game, .home-product-game"
-                                )
-                                    ?.textContent
-                                    .trim()
-                                ||
-                                "";
-
-
-                            if (
-                                name
-                                    .toLowerCase()
-                                    .includes(query)
-                                ||
-                                game
-                                    .toLowerCase()
-                                    .includes(query)
-                            ) {
-
-                                resultHTML += `
-
-                                    <div class="search-result">
-
-                                        <strong>
-                                            ${escapeHTML(name)}
-                                        </strong>
-
-                                        <span>
-                                            ${escapeHTML(game)}
-                                        </span>
-
-                                    </div>
-
-                                `;
-
-                            }
-
-                        }
-                    );
-
-
-                    /* GAMES */
-
-                    games.forEach(
-                        game => {
-
-                            const name =
-                                game.querySelector(
-                                    "h2, h3"
-                                )
-                                    ?.textContent
-                                    .trim()
-                                ||
-                                "";
-
-
-                            const description =
-                                game.querySelector(
-                                    "p"
-                                )
-                                    ?.textContent
-                                    .trim()
-                                ||
-                                "";
-
-
-                            if (
-                                name
-                                    .toLowerCase()
-                                    .includes(query)
-                                ||
-                                description
-                                    .toLowerCase()
-                                    .includes(query)
-                            ) {
-
-                                resultHTML += `
-
-                                    <div class="search-result">
-
-                                        <strong>
-                                            ${escapeHTML(name)}
-                                        </strong>
-
-                                        <span>
-                                            ${escapeHTML(description)}
-                                        </span>
-
-                                    </div>
-
-                                `;
-
-                            }
-
-                        }
-                    );
-
-
-                    if (!resultHTML) {
-
-                        resultHTML = `
-
-                            <div class="no-results">
-
-                                No results found for
-                                "${escapeHTML(query)}"
-
-                            </div>
-
-                        `;
-
-                    }
-
-
-                    results.innerHTML =
-                        resultHTML;
-
-                }
-            );
-
-        }
-    );
-
-}
-
-
-/* ==========================================
    NAVBAR SCROLL EFFECT
 ========================================== */
 
 const navbar =
-    document.querySelector(".navbar");
+    document.querySelector(
+        ".navbar"
+    );
 
 
 if (navbar) {
@@ -914,7 +627,9 @@ if (navbar) {
 ========================================== */
 
 const navActions =
-    document.querySelector(".nav-actions");
+    document.querySelector(
+        ".nav-actions"
+    );
 
 
 function updateNavbar(user) {
@@ -923,20 +638,24 @@ function updateNavbar(user) {
         return;
     }
 
+
     const searchButton =
         navActions.querySelector(
             ".search-btn"
         );
+
 
     const cartButton =
         navActions.querySelector(
             ".cart-btn"
         );
 
+
     const coinButton =
         navActions.querySelector(
             ".coin-btn"
         );
+
 
     if (!cartButton) {
         return;
@@ -953,12 +672,21 @@ function updateNavbar(user) {
             "";
 
 
-        navActions.appendChild(
-            searchButton
-        );
+        if (searchButton) {
+
+            navActions.appendChild(
+                searchButton
+            );
+
+        }
+
 
         if (coinButton) {
-        navActions.appendChild(coinButton);
+
+            navActions.appendChild(
+                coinButton
+            );
+
         }
 
 
@@ -1020,7 +748,9 @@ function updateNavbar(user) {
         `;
 
 
-        /* DROPDOWN */
+        /* ======================================
+           ACCOUNT DROPDOWN
+        ====================================== */
 
         const dropdown =
             document.createElement(
@@ -1107,7 +837,9 @@ function updateNavbar(user) {
         );
 
 
-        /* ACCOUNT TOGGLE */
+        /* ======================================
+           ACCOUNT TOGGLE
+        ====================================== */
 
         accountButton.addEventListener(
             "click",
@@ -1123,21 +855,33 @@ function updateNavbar(user) {
         );
 
 
-        /* CLOSE DROPDOWN */
+        /* ======================================
+           CLOSE ACCOUNT DROPDOWN
+        ====================================== */
 
         document.addEventListener(
             "click",
-            () => {
+            event => {
 
-                account.classList.remove(
-                    "open"
-                );
+                if (
+                    !account.contains(
+                        event.target
+                    )
+                ) {
+
+                    account.classList.remove(
+                        "open"
+                    );
+
+                }
 
             }
         );
 
 
-        /* LOGOUT */
+        /* ======================================
+           LOGOUT
+        ====================================== */
 
         const logoutButton =
             dropdown.querySelector(
@@ -1194,9 +938,27 @@ function updateNavbar(user) {
             "";
 
 
-        navActions.appendChild(
-            searchButton
-        );
+        if (searchButton) {
+
+            navActions.appendChild(
+                searchButton
+            );
+
+        }
+
+
+        /*
+           Keep the coin button exactly like
+           the old navbar.
+        */
+
+        if (coinButton) {
+
+            navActions.appendChild(
+                coinButton
+            );
+
+        }
 
 
         navActions.appendChild(
@@ -1259,6 +1021,7 @@ onAuthStateChanged(
             user
         );
 
+
         updateCoinBalance(
             user
         );
@@ -1283,7 +1046,8 @@ window.addEventListener(
     event => {
 
         if (
-            event.key === CART_STORAGE_KEY
+            event.key ===
+            CART_STORAGE_KEY
         ) {
 
             updateCartCount();
@@ -1293,122 +1057,219 @@ window.addEventListener(
     }
 );
 
-/* =========================================
+
+/* ==========================================
    NAVBAR MENU
 ========================================== */
 
-const menuBtn = document.getElementById("menuBtn");
-const menuDropdown = document.getElementById("menuDropdown");
+const menuBtn =
+    document.getElementById(
+        "menuBtn"
+    );
 
 
-if (menuBtn && menuDropdown) {
-
-    menuBtn.addEventListener("click", function (event) {
-
-        event.stopPropagation();
-
-        const isOpen =
-            menuDropdown.classList.toggle("open");
-
-        menuBtn.classList.toggle(
-            "active",
-            isOpen
-        );
-
-        menuBtn.setAttribute(
-            "aria-expanded",
-            isOpen ? "true" : "false"
-        );
-
-        menuDropdown.setAttribute(
-            "aria-hidden",
-            isOpen ? "false" : "true"
-        );
-
-    });
+const menuDropdown =
+    document.getElementById(
+        "menuDropdown"
+    );
 
 
-    /* CLOSE WHEN CLICKING OUTSIDE */
+if (
+    menuBtn &&
+    menuDropdown
+) {
 
-    document.addEventListener("click", function (event) {
+    menuBtn.addEventListener(
+        "click",
+        function (event) {
 
-        if (
-            !menuDropdown.contains(event.target) &&
-            !menuBtn.contains(event.target)
-        ) {
+            event.stopPropagation();
 
-            menuDropdown.classList.remove("open");
 
-            menuBtn.classList.remove("active");
+            const isOpen =
+                menuDropdown.classList.toggle(
+                    "open"
+                );
+
+
+            menuBtn.classList.toggle(
+                "active",
+                isOpen
+            );
+
 
             menuBtn.setAttribute(
                 "aria-expanded",
-                "false"
+                isOpen
+                    ? "true"
+                    : "false"
             );
+
 
             menuDropdown.setAttribute(
                 "aria-hidden",
-                "true"
+                isOpen
+                    ? "false"
+                    : "true"
             );
 
         }
+    );
 
-    });
+
+    /* ======================================
+       CLOSE WHEN CLICKING OUTSIDE
+    ====================================== */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                !menuDropdown.contains(
+                    event.target
+                ) &&
+                !menuBtn.contains(
+                    event.target
+                )
+            ) {
+
+                menuDropdown.classList.remove(
+                    "open"
+                );
 
 
-    /* CLOSE WITH ESC */
+                menuBtn.classList.remove(
+                    "active"
+                );
 
-    document.addEventListener("keydown", function (event) {
 
-        if (event.key === "Escape") {
+                menuBtn.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
 
-            menuDropdown.classList.remove("open");
 
-            menuBtn.classList.remove("active");
+                menuDropdown.setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
 
-            menuBtn.setAttribute(
-                "aria-expanded",
-                "false"
-            );
-
-            menuDropdown.setAttribute(
-                "aria-hidden",
-                "true"
-            );
+            }
 
         }
+    );
 
-    });
+
+    /* ======================================
+       CLOSE WITH ESC
+    ====================================== */
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                menuDropdown.classList.remove(
+                    "open"
+                );
+
+
+                menuBtn.classList.remove(
+                    "active"
+                );
+
+
+                menuBtn.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+
+
+                menuDropdown.setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
+
+            }
+
+        }
+    );
 
 }
 
+
+/* ==========================================
+   COIN BALANCE
+========================================== */
+
 async function updateCoinBalance(user) {
 
-    const coinBalance = document.querySelector(".coin-balance");
+    const coinBalance =
+        document.querySelector(
+            ".coin-balance"
+        );
 
-    if (!coinBalance) return;
 
-    if (!user) {
-        coinBalance.textContent = "0";
+    if (!coinBalance) {
         return;
     }
 
+
+    if (!user) {
+
+        coinBalance.textContent =
+            "0";
+
+        return;
+
+    }
+
+
     try {
 
-        const userRef = doc(db, "users", user.uid);
-        const userSnapshot = await getDoc(userRef);
+        const userRef =
+            doc(
+                db,
+                "users",
+                user.uid
+            );
 
-        if (!userSnapshot.exists()) {
-            coinBalance.textContent = "0";
+
+        const userSnapshot =
+            await getDoc(
+                userRef
+            );
+
+
+        if (
+            !userSnapshot.exists()
+        ) {
+
+            coinBalance.textContent =
+                "0";
+
             return;
+
         }
 
-        const userData = userSnapshot.data();
 
-        const coins = Number(userData.coins) || 0;
+        const userData =
+            userSnapshot.data();
+
+
+        const coins =
+            Number(
+                userData.coins
+            ) || 0;
+
 
         coinBalance.textContent =
             coins.toLocaleString();
+
 
     } catch (error) {
 
@@ -1417,6 +1278,10 @@ async function updateCoinBalance(user) {
             error
         );
 
-        coinBalance.textContent = "0";
+
+        coinBalance.textContent =
+            "0";
+
     }
+
 }

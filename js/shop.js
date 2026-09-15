@@ -9,6 +9,7 @@ import { auth, db } from "./firebase.js";
 import {
     collection,
     getDocs,
+    getDoc,
     doc,
     setDoc,
     deleteDoc,
@@ -89,6 +90,8 @@ let wishlistItems = new Set();
 
 let currentUser = null;
 
+let showAllSection = true;
+
 
 /* ==========================================
    HELPERS
@@ -148,6 +151,62 @@ function isActiveProduct(product) {
 function isDealProduct(product) {
 
     return product.deal === true;
+
+}
+
+/* ==========================================
+   SHOP PAGE CONFIG
+   WebsiteConfig / shopPage
+========================================== */
+
+async function loadShopPageConfig() {
+
+    try {
+
+        const configRef =
+            doc(
+                db,
+                "WebsiteConfig",
+                "shopPage"
+            );
+
+        const configSnapshot =
+            await getDoc(configRef);
+
+        if (!configSnapshot.exists()) {
+
+            console.warn(
+                "WebsiteConfig/shopPage not found. Using defaults."
+            );
+
+            showAllSection = true;
+
+            return;
+
+        }
+
+        const config =
+            configSnapshot.data();
+
+        showAllSection =
+            config.allSection !== false;
+
+        console.log(
+            "Shop page config loaded:",
+            config
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Shop page config loading error:",
+            error
+        );
+
+        // Safe fallback
+        showAllSection = true;
+
+    }
 
 }
 
@@ -236,6 +295,101 @@ function getFinalPrice(product) {
     }
 
     return price;
+
+}
+
+/* ==========================================
+   BACKGROUND PRODUCT SORTING
+   No visible UI
+========================================== */
+
+const PRODUCT_SORT_MODE = "amount";
+// "amount" = lowest amount first
+// "price"  = lowest price first
+
+
+function getSortableAmount(product) {
+
+    const amount = product.amount;
+
+    if (amount === null || amount === undefined) {
+        return 0;
+    }
+
+    // If Firestore stores amount as a number
+    if (typeof amount === "number") {
+        return amount;
+    }
+
+    const text = String(amount);
+
+    /*
+        Handles values such as:
+
+        "100 G-Coins"       → 100
+        "500+10 G-Coin"     → 510
+        "1000+50 G-Coin"    → 1050
+        "2500+200 G-Coin"   → 2700
+    */
+
+    const numbers =
+        text.match(/\d+(?:\.\d+)?/g);
+
+    if (!numbers) {
+        return 0;
+    }
+
+    return numbers.reduce(
+        (total, number) =>
+            total + Number(number),
+        0
+    );
+
+}
+
+
+function sortProductsAscending(productList) {
+
+    return [...productList].sort(
+        (a, b) => {
+
+            let valueA;
+            let valueB;
+
+            if (PRODUCT_SORT_MODE === "price") {
+
+                valueA =
+                    getFinalPrice(a);
+
+                valueB =
+                    getFinalPrice(b);
+
+            } else {
+
+                valueA =
+                    getSortableAmount(a);
+
+                valueB =
+                    getSortableAmount(b);
+
+            }
+
+            // Primary sorting
+            if (valueA !== valueB) {
+                return valueA - valueB;
+            }
+
+            /*
+                If two products have the same amount,
+                use price as a secondary sort.
+            */
+            return (
+                getFinalPrice(a) -
+                getFinalPrice(b)
+            );
+
+        }
+    );
 
 }
 
@@ -998,17 +1152,20 @@ function renderProductGrid(
 
     }
 
-    productsList.forEach(
-        product => {
+    const sortedProducts =
+    sortProductsAscending(productsList);
 
-            grid.appendChild(
-                createProductCard(
-                    product
-                )
-            );
+sortedProducts.forEach(
+    product => {
 
-        }
-    );
+        grid.appendChild(
+            createProductCard(
+                product
+            )
+        );
+
+    }
+);
 
 }
 
@@ -1397,12 +1554,13 @@ function updateSectionVisibility() {
 
     if (allProductsSection) {
 
-        allProductsSection.style.display =
-            currentCategory === "all"
-                ? ""
-                : "none";
+    allProductsSection.style.display =
+        showAllSection &&
+        currentCategory === "all"
+            ? ""
+            : "none";
 
-    }
+}
 
     const gameSectionElements =
         gameSections
@@ -1784,6 +1942,8 @@ async function loadShopData() {
             );
 
         await loadWishlist();
+
+        await loadShopPageConfig();
 
         renderCategoryButtons();
 
