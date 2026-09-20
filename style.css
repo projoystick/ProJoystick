@@ -527,14 +527,19 @@ select {
 }
 
 .signup-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 10px 17px;
     border-radius: 9px;
+    white-space: nowrap;
 
     background: var(--accent);
     color: #08090d;
 
     font-size: 12px;
     font-weight: 800;
+    line-height: 1;
 
     transition:
         background 0.2s ease,
@@ -3688,11 +3693,9 @@ select {
     }
 
     .signup-btn {
-        padding-inline: 10px;
-        font-size: 11px;
+        padding: 9px 12px;
+        font-size: 12px;
     }
-
-    
 
     .hero h1 {
         font-size: 44px;
@@ -3720,6 +3723,10 @@ select {
 
     .home-product-buy {
         padding: 6px 7px;
+    }
+
+    .logo-text {
+        display: none;
     }
     
 }
@@ -3829,7 +3836,8 @@ select {
     .social-links a:hover {
         color: var(--accent);
     }
-}
+
+    }
 
 
 
