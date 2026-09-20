@@ -175,8 +175,8 @@ async function getCoinSettings() {
     const settingsRef =
         doc(
             db,
-            "coinSettings",
-            "config"
+            "WebsiteConfig",
+            "coinConfig"
         );
 
     const settingsSnapshot =
