@@ -627,9 +627,7 @@ if (navbar) {
 ========================================== */
 
 const navActions =
-    document.querySelector(
-        ".nav-actions"
-    );
+    document.querySelector(".nav-actions");
 
 
 function updateNavbar(user) {
@@ -639,238 +637,337 @@ function updateNavbar(user) {
     }
 
 
-    const searchButton =
-        navActions.querySelector(
-            ".search-btn"
-        );
+    /* ======================================
+       GET ORIGINAL NAV ELEMENTS
+    ====================================== */
 
+    const searchButton =
+        navActions.querySelector(".search-btn");
 
     const cartButton =
-        navActions.querySelector(
-            ".cart-btn"
-        );
-
+        navActions.querySelector(".cart-btn");
 
     const coinButton =
-        navActions.querySelector(
-            ".coin-btn"
+        navActions.querySelector(".coin-btn");
+
+    const loginButton =
+        navActions.querySelector(".login-btn");
+
+    const signupButton =
+        navActions.querySelector(".signup-btn");
+
+
+    if (!searchButton) {
+        return;
+    }
+
+
+    /* ======================================
+       LOGGED OUT
+       SEARCH + LOGIN + SIGN UP ONLY
+    ====================================== */
+
+    if (!user) {
+
+        navActions.innerHTML = "";
+
+
+        /* SEARCH */
+
+        navActions.appendChild(
+            searchButton
         );
 
 
-    if (!cartButton) {
+        /* LOGIN */
+
+        if (loginButton) {
+
+            navActions.appendChild(
+                loginButton
+            );
+
+        }
+
+
+        /* SIGN UP */
+
+        if (signupButton) {
+
+            navActions.appendChild(
+                signupButton
+            );
+
+        }
+
+
+        /* SHOW NAVBAR AFTER AUTH CHECK */
+
+        navActions.style.visibility =
+            "visible";
+
+
         return;
     }
 
 
     /* ======================================
        LOGGED IN
+       SEARCH + COINS + CART + ACCOUNT
     ====================================== */
 
-    if (user) {
-
-        navActions.innerHTML =
-            "";
+    navActions.innerHTML = "";
 
 
-        if (searchButton) {
+    /* SEARCH */
 
-            navActions.appendChild(
-                searchButton
-            );
-
-        }
+    navActions.appendChild(
+        searchButton
+    );
 
 
-        if (coinButton) {
+    /* COINS */
 
-            navActions.appendChild(
-                coinButton
-            );
+    if (coinButton) {
 
-        }
+        navActions.appendChild(
+            coinButton
+        );
 
+    }
+
+
+    /* CART */
+
+    if (cartButton) {
 
         navActions.appendChild(
             cartButton
         );
 
-
-        const account =
-            document.createElement(
-                "div"
-            );
+    }
 
 
-        account.className =
-            "account-menu";
+    /* ======================================
+       ACCOUNT MENU
+    ====================================== */
+
+    const account =
+        document.createElement("div");
 
 
-        const accountButton =
-            document.createElement(
-                "button"
-            );
+    account.className =
+        "account-menu";
 
 
-        accountButton.type =
-            "button";
+    const accountButton =
+        document.createElement("button");
 
 
-        accountButton.className =
-            "account-button";
+    accountButton.type =
+        "button";
 
 
-        const displayName =
-            user.displayName ||
-            user.email?.split("@")[0] ||
-            "User";
+    accountButton.className =
+        "account-button";
 
 
-        const firstLetter =
-            displayName
-                .charAt(0)
-                .toUpperCase();
+    const displayName =
+        user.displayName ||
+        user.email?.split("@")[0] ||
+        "User";
 
 
-        accountButton.innerHTML = `
+    const firstLetter =
+        displayName
+            .charAt(0)
+            .toUpperCase();
 
-            <span class="account-avatar">
+
+    accountButton.innerHTML = `
+
+        <span class="account-avatar">
+            ${escapeHTML(firstLetter)}
+        </span>
+
+        <span class="account-name">
+            ${escapeHTML(displayName)}
+        </span>
+
+        <span class="account-arrow">
+            ▾
+        </span>
+
+    `;
+
+
+    /* ======================================
+       ACCOUNT DROPDOWN
+    ====================================== */
+
+    const dropdown =
+        document.createElement("div");
+
+
+    dropdown.className =
+        "account-dropdown";
+
+
+    dropdown.innerHTML = `
+
+        <div class="account-dropdown-header">
+
+            <span class="dropdown-avatar">
                 ${escapeHTML(firstLetter)}
             </span>
 
-            <span class="account-name">
-                ${escapeHTML(displayName)}
-            </span>
+            <div>
 
-            <span class="account-arrow">
-                ▾
-            </span>
+                <strong>
+                    ${escapeHTML(displayName)}
+                </strong>
 
-        `;
-
-
-        /* ======================================
-           ACCOUNT DROPDOWN
-        ====================================== */
-
-        const dropdown =
-            document.createElement(
-                "div"
-            );
-
-
-        dropdown.className =
-            "account-dropdown";
-
-
-        dropdown.innerHTML = `
-
-            <div class="account-dropdown-header">
-
-                <span class="dropdown-avatar">
-                    ${escapeHTML(firstLetter)}
+                <span>
+                    ${escapeHTML(user.email || "")}
                 </span>
-
-                <div>
-
-                    <strong>
-                        ${escapeHTML(displayName)}
-                    </strong>
-
-                    <span>
-                        ${escapeHTML(user.email || "")}
-                    </span>
-
-                </div>
 
             </div>
 
-
-            <div class="dropdown-divider"></div>
-
-
-            <a href="${paths.profile}">
-                <span>👤</span>
-                Profile
-            </a>
+        </div>
 
 
-            <a href="${paths.orders}">
-                <span>📦</span>
-                My Orders
-            </a>
+        <div class="dropdown-divider"></div>
 
 
-            <a href="${paths.wishlist}">
-                <span>♡</span>
-                Wishlist
-            </a>
+        <a href="${paths.profile}">
+            <span>👤</span>
+            Profile
+        </a>
 
 
-            <div class="dropdown-divider"></div>
+        <a href="${paths.orders}">
+            <span>📦</span>
+            My Orders
+        </a>
 
 
-            <button
-                class="logout-button"
-                type="button"
-            >
-
-                <span>↪</span>
-                Logout
-
-            </button>
-
-        `;
+        <a href="${paths.wishlist}">
+            <span>♡</span>
+            Wishlist
+        </a>
 
 
-        account.appendChild(
-            accountButton
-        );
+        <div class="dropdown-divider"></div>
 
 
-        account.appendChild(
-            dropdown
-        );
+        <button
+            class="logout-button"
+            type="button"
+        >
+
+            <span>↪</span>
+            Logout
+
+        </button>
+
+    `;
 
 
-        navActions.appendChild(
-            account
-        );
+    account.appendChild(
+        accountButton
+    );
 
 
-        /* ======================================
-           ACCOUNT TOGGLE
-        ====================================== */
+    account.appendChild(
+        dropdown
+    );
 
-        accountButton.addEventListener(
-            "click",
-            event => {
 
-                event.stopPropagation();
+    navActions.appendChild(
+        account
+    );
 
-                account.classList.toggle(
+
+    /* ======================================
+       ACCOUNT TOGGLE
+    ====================================== */
+
+    accountButton.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+
+            account.classList.toggle(
+                "open"
+            );
+
+        }
+    );
+
+
+    /* ======================================
+       CLOSE ACCOUNT DROPDOWN
+    ====================================== */
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+                !account.contains(
+                    event.target
+                )
+            ) {
+
+                account.classList.remove(
                     "open"
                 );
 
             }
+
+        }
+    );
+
+
+    /* ======================================
+       LOGOUT
+    ====================================== */
+
+    const logoutButton =
+        dropdown.querySelector(
+            ".logout-button"
         );
 
 
-        /* ======================================
-           CLOSE ACCOUNT DROPDOWN
-        ====================================== */
+    if (logoutButton) {
 
-        document.addEventListener(
+        logoutButton.addEventListener(
             "click",
-            event => {
+            async () => {
 
-                if (
-                    !account.contains(
-                        event.target
-                    )
-                ) {
+                try {
 
-                    account.classList.remove(
-                        "open"
+                    await signOut(
+                        auth
+                    );
+
+
+                    window.location.href =
+                        paths.home;
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
+
+
+                    showNotification(
+                        "Unable to log out"
                     );
 
                 }
@@ -878,119 +975,18 @@ function updateNavbar(user) {
             }
         );
 
-
-        /* ======================================
-           LOGOUT
-        ====================================== */
-
-        const logoutButton =
-            dropdown.querySelector(
-                ".logout-button"
-            );
-
-
-        if (logoutButton) {
-
-            logoutButton.addEventListener(
-                "click",
-                async () => {
-
-                    try {
-
-                        await signOut(
-                            auth
-                        );
-
-
-                        window.location.href =
-                            paths.home;
-
-
-                    } catch (error) {
-
-                        console.error(
-                            "Logout error:",
-                            error
-                        );
-
-
-                        showNotification(
-                            "Unable to log out"
-                        );
-
-                    }
-
-                }
-            );
-
-        }
-
     }
 
 
     /* ======================================
-       LOGGED OUT
+       SHOW NAVBAR AFTER AUTH CHECK
     ====================================== */
 
-    else {
-
-        navActions.innerHTML =
-            "";
-
-
-        if (searchButton) {
-
-            navActions.appendChild(
-                searchButton
-            );
-
-        }
-
-
-        /*
-           Keep the coin button exactly like
-           the old navbar.
-        */
-
-        if (coinButton) {
-
-            navActions.appendChild(
-                coinButton
-            );
-
-        }
-
-
-        navActions.appendChild(
-            cartButton
-        );
-
-
-        navActions.insertAdjacentHTML(
-            "beforeend",
-            `
-
-                <a
-                    href="${paths.login}"
-                    class="login-btn"
-                >
-                    Login
-                </a>
-
-
-                <a
-                    href="${paths.register}"
-                    class="signup-btn"
-                >
-                    Sign Up
-                </a>
-
-            `
-        );
-
-    }
+    navActions.style.visibility =
+        "visible";
 
 }
+
 
 
 /* ==========================================
