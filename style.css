@@ -3837,6 +3837,10 @@ select {
         color: var(--accent);
     }
 
+    .logo-text {
+        display: none;
+    }
+
     }
 
 
@@ -3895,4 +3899,11 @@ select {
     padding: 8px 0;
     font-size: 14px;
     opacity: 0.6;
+}
+
+/* ==========================================
+   Navbar hidden until the Firebase auth loaded
+========================================== */
+.nav-actions {
+    visibility: hidden;
 }
