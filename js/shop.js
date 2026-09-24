@@ -727,7 +727,7 @@ function createProductCard(product) {
         document.createElement("article");
 
     card.className =
-        "shop-product-card";
+        "shop-product-card glare-hover";
 
     const name =
         product.name ||

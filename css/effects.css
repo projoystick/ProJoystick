@@ -1,0 +1,137 @@
+/* ==========================================
+   PROJOYSTICK — GLARE HOVER EFFECT
+   ONLY GLARE — DOES NOT AFFECT CARD LAYOUT
+========================================== */
+
+.glare-hover {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glare layer */
+.glare-hover::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    background: linear-gradient(
+        var(--gh-angle, -30deg),
+        transparent 60%,
+        var(--gh-rgba, rgba(255, 255, 255, 0.3)) 70%,
+        transparent 80%
+    );
+
+    background-size:
+        var(--gh-size, 300%) var(--gh-size, 300%);
+
+    background-repeat: no-repeat;
+
+    background-position:
+        -100% -100%;
+
+    transition:
+        background-position var(--gh-duration, 800ms) ease;
+
+    z-index: 10;
+}
+
+/* Hover */
+.glare-hover:hover::before {
+    background-position:
+        100% 100%;
+}
+
+
+/* ==========================================
+   PLAY ONCE VERSION
+========================================== */
+
+.glare-hover--play-once::before {
+    transition: none;
+}
+
+.glare-hover--play-once:hover::before {
+    transition:
+        background-position var(--gh-duration, 800ms) ease;
+
+    background-position:
+        100% 100%;
+}
+
+.glare-hover--play-once:hover::before {
+    transition:
+        background-position var(--gh-duration, 650ms) ease;
+
+    background-position:
+        100% 100%,
+        0 0;
+}
+
+
+
+/* ==========================================
+   PROJOYSTICK — LOGO SHINE
+   BASE TEXT NEVER DISAPPEARS
+========================================== */
+
+.shiny-logo-text {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+
+    /* Keep your original logo color */
+}
+
+
+/* ==========================================
+   SHINE
+========================================== */
+
+.shiny-logo-text::after {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    left: -100%;
+    width: 45%;
+
+    pointer-events: none;
+
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 20%,
+        rgba(255, 255, 255, 0.9) 50%,
+        rgba(255, 255, 255, 0.05) 80%,
+        transparent 100%
+    );
+
+    transform: skewX(-20deg);
+
+    animation: logoShine 2s ease-in-out infinite;
+}
+
+
+/* ==========================================
+   ANIMATION
+========================================== */
+
+@keyframes logoShine {
+
+    0% {
+        left: -100%;
+    }
+
+    45% {
+        left: 150%;
+    }
+
+    100% {
+        left: 150%;
+    }
+}

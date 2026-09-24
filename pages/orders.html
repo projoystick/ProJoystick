@@ -27,21 +27,17 @@
         href="../css/orders.css"
     >
 
+    <link
+        rel="stylesheet"
+        href="../css/effects.css"
+    >
+
     <link rel="icon" href="../images/webicon.png">
 
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-    >
-
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin
-    >
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
         rel="stylesheet"
     >
 
@@ -80,10 +76,27 @@
                     <img src="/images/webicon.png" alt="Pro Joystick"class="logo-icon"
                     >
 
-                    <span class="logo-text"> 
-                        <span class="logo-pro">PRO</span> 
-                        <span class="logo-joystick">JOYSTICK</span> 
-                    </span>
+                    <span
+                            class="logo-pro shiny-text"
+                            data-shiny-text="PRO"
+                            data-speed="2"
+                            data-color="#00ff40"
+                            data-shine-color="#ffffff"
+                            data-spread="120"
+                        >
+                            PRO
+                        </span>
+
+                        <span
+                            class="logo-joystick shiny-text"
+                            data-shiny-text="JOYSTICK"
+                            data-speed="2"
+                            data-color="#ffffff"
+                            data-shine-color="#00ff40"
+                            data-spread="120"
+                        >
+                            JOYSTICK
+                        </span>
                 </a>
             </div>
 
@@ -514,6 +527,10 @@
     <script
     type="module"
     src="../js/search.js"
+    ></script>
+    <script
+    type="module"
+    src="../js/effects.js"
     ></script>
 
 

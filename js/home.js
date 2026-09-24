@@ -193,7 +193,7 @@ async function loadPopularGames() {
 
 
             card.className =
-                "home-game-card";
+                "home-game-card glare-hover";
 
 
             card.innerHTML = `
@@ -396,7 +396,7 @@ async function loadPinnedProducts() {
 
 
             card.className =
-                "home-product-card";
+                "home-product-card glare-hover";
 
 
             /*

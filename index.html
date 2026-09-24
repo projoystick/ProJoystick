@@ -12,6 +12,8 @@
 
     <title>Pro Joystick — Gaming Marketplace</title>
 
+    
+
     <meta
         name="description"
         content="Pro Joystick is your gaming marketplace for game currency, digital items, skins and more."
@@ -20,6 +22,11 @@
     <link
         rel="stylesheet"
         href="style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/css/effects.css"
     >
 
     <!-- Google Fonts -->
@@ -93,9 +100,30 @@
                         class="logo-icon"
                     >
 
-                    <span class="logo-text"> 
-                        <span class="logo-pro">PRO</span> 
-                        <span class="logo-joystick">JOYSTICK</span> 
+                    <span
+                        class="logo-text"
+                    >
+                        <span
+                            class="logo-pro shiny-text"
+                            data-shiny-text="PRO"
+                            data-speed="2"
+                            data-color="#00ff40"
+                            data-shine-color="#ffffff"
+                            data-spread="120"
+                        >
+                            PRO
+                        </span>
+
+                        <span
+                            class="logo-joystick shiny-text"
+                            data-shiny-text="JOYSTICK"
+                            data-speed="2"
+                            data-color="#ffffff"
+                            data-shine-color="#00ff40"
+                            data-spread="120"
+                        >
+                            JOYSTICK
+                        </span>
                     </span>
                 </a>
             </div>
@@ -225,9 +253,9 @@
 
                 <a
                     href="pages/login.html"
-                    class="login-btn"
+                    class="login-btn "
                 >
-                    Login
+                    LogIn
                 </a>
 
 
@@ -378,6 +406,8 @@
 
             </div>
 
+            
+
 
             <!-- HERO VISUAL -->
 
@@ -425,6 +455,9 @@
 
 
         </section>
+
+
+        
 
 
 
@@ -957,6 +990,11 @@
     <script
     type="module"
     src="js/search.js"
+    ></script>
+
+    <script
+    type="module"
+    src="js/effects.js"
     ></script>
 
 

@@ -1,3 +1,5 @@
+
+
 /* =========================================================
    GAMEVAULT — CLEAN MASTER STYLESHEET
    Built around the current HTML + JavaScript class names.
@@ -361,7 +363,7 @@ select {
 
     font-family: "Orbitron", sans-serif;
     font-size: 19px;
-    font-weight: 800;
+    font-weight: 600 !important;
     letter-spacing: 1px;
 }
 
@@ -516,15 +518,23 @@ select {
 }
 
 .login-btn {
+    display: inline-flex;
     padding: 9px 12px;
-    color: #c8cad2;
+    color: rgba(168, 255, 62, 0.999);
     font-size: 13px;
     transition: color 0.2s ease;
+    border-radius: 9px;
+    background: #161821;
 }
 
 .login-btn:hover {
     color: var(--text);
+    transform: translateY(-1px);
+    box-shadow: 
+        0 8px 25px 
+        rgba(168, 255, 62, 0.12);
 }
+
 
 .signup-btn {
     display: inline-flex;
@@ -3837,10 +3847,6 @@ select {
         color: var(--accent);
     }
 
-    .logo-text {
-        display: none;
-    }
-
     }
 
 
@@ -3906,4 +3912,10 @@ select {
 ========================================== */
 .nav-actions {
     visibility: hidden;
+}
+
+@media (max-width: 445px) {
+    .logo-text {
+        display: none;
+    }
 }

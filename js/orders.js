@@ -116,29 +116,64 @@ function formatDate(timestamp) {
 
 function getPaymentStatus(order) {
 
-    const status =
+    const paymentStatus =
         String(
-            order?.paymentStatus || "pending"
-        ).toLowerCase();
+            order?.paymentStatus || ""
+        ).trim().toLowerCase();
 
-    const validStatuses = [
-        "pending",
-        "paid",
-        "failed",
-        "refunded"
-    ];
+    const refundStatus =
+        String(
+            order?.refundStatus || ""
+        ).trim().toLowerCase();
+
+    const orderStatus =
+        String(
+            order?.orderStatus || ""
+        ).trim().toLowerCase();
+
+
+    /* ======================================
+       REFUNDED
+    ====================================== */
 
     if (
-        validStatuses.includes(status)
+        paymentStatus === "refunded" ||
+        paymentStatus === "refund" ||
+        refundStatus === "refunded" ||
+        refundStatus === "refund" ||
+        orderStatus === "refunded"
     ) {
-        return status;
+        return "refunded";
     }
 
+
+    /* ======================================
+       PAID
+    ====================================== */
+
     if (
+        paymentStatus === "paid" ||
         order?.paymentVerified === true
     ) {
         return "paid";
     }
+
+
+    /* ======================================
+       FAILED
+    ====================================== */
+
+    if (
+        paymentStatus === "failed" ||
+        paymentStatus === "failure"
+    ) {
+        return "failed";
+    }
+
+
+    /* ======================================
+       PENDING
+    ====================================== */
 
     return "pending";
 }
