@@ -456,3 +456,61 @@ document.addEventListener(
             });
     }
 );
+
+
+
+
+/* ====================================================================================
+                        MENU DROPDOWN GLIDE
+==================================================================================== */
+
+/* ==========================================
+   MENU DROPDOWN GLIDE
+========================================== */
+
+/* ==========================================
+   MENU DROPDOWN GLIDE EFFECT
+========================================== */
+
+const menuDropdown =
+    document.getElementById("menuDropdown");
+
+if (menuDropdown) {
+
+    const menuItems =
+        menuDropdown.querySelectorAll("a");
+
+
+    menuItems.forEach(item => {
+
+        item.addEventListener("mouseenter", () => {
+
+            menuDropdown.style.setProperty(
+                "--glide-y",
+                `${item.offsetTop}px`
+            );
+
+            menuDropdown.style.setProperty(
+                "--glide-height",
+                `${item.offsetHeight}px`
+            );
+
+            menuDropdown.classList.add(
+                "glide-active"
+            );
+        });
+
+    });
+
+
+    menuDropdown.addEventListener(
+        "mouseleave",
+        () => {
+
+            menuDropdown.classList.remove(
+                "glide-active"
+            );
+        }
+    );
+}
+

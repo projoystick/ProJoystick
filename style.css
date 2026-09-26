@@ -281,23 +281,17 @@ select {
     top: var(--nav-height);
     left: 20px;
     z-index: 9999;
-
     width: 230px;
     padding: 10px;
-
     display: flex;
     flex-direction: column;
-
     border: 1px solid var(--border);
     border-radius: 12px;
-
     background: rgba(13, 15, 21, 0.97);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
-
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-
     transition:
         opacity 0.2s ease,
         transform 0.2s ease,
@@ -341,6 +335,59 @@ select {
 .menu-dropdown a:hover {
     background: #191c25;
     color: var(--accent);
+}
+
+/* ==========================================
+   MENU DROPDOWN GLIDE HIGHLIGHT
+========================================== */
+
+.menu-dropdown {
+    position: fixed;
+    overflow: hidden;
+}
+
+/* Moving highlight */
+.menu-dropdown::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 10px;
+
+    width: calc(100% - 20px);
+    height: 0;
+
+    border-radius: 8px;
+
+    background: #191c25;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transform: translateY(var(--glide-y, 0px));
+
+    transition:
+        transform 220ms cubic-bezier(
+            0.23,
+            1,
+            0.32,
+            1
+        ),
+        height 150ms ease,
+        opacity 150ms ease;
+}
+
+.menu-dropdown.glide-active::before {
+    opacity: 1;
+}
+
+
+/* Keep links above the highlight */
+.menu-dropdown a {
+    position: relative;
+    z-index: 1;
 }
 
 .span-home {

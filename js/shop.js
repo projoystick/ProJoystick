@@ -2167,3 +2167,186 @@ window.addEventListener(
 
     }
 );
+
+
+/* ==========================================
+   CATEGORY DOCK MAGNIFICATION
+========================================== */
+
+let categoryDockFrame = null;
+let categoryDockMouseX = null;
+
+const CATEGORY_BASE_WIDTH = 85;
+const CATEGORY_MAX_EXTRA = 18;
+const CATEGORY_DISTANCE = 150;
+
+
+/* ==========================================
+   UPDATE CATEGORY DOCK
+========================================== */
+
+function updateCategoryDock() {
+
+    if (
+        !shopCategories ||
+        categoryDockMouseX === null
+    ) {
+        return;
+    }
+
+    const buttons =
+        Array.from(
+            shopCategories.querySelectorAll(
+                ".shop-category-btn"
+            )
+        );
+
+    if (!buttons.length) {
+        return;
+    }
+
+
+    buttons.forEach((button, index) => {
+
+        const rect =
+            button.getBoundingClientRect();
+
+        const buttonCenter =
+            rect.left +
+            rect.width / 2;
+
+        const distance =
+            Math.abs(
+                categoryDockMouseX -
+                buttonCenter
+            );
+
+        const influence =
+            Math.max(
+                0,
+                1 -
+                distance /
+                CATEGORY_DISTANCE
+            );
+
+        const extraWidth =
+            influence *
+            CATEGORY_MAX_EXTRA;
+
+        const newWidth =
+            CATEGORY_BASE_WIDTH +
+            extraWidth;
+
+
+        button.style.width =
+            `${newWidth}px`;
+
+        button.style.flexBasis =
+            `${newWidth}px`;
+
+
+        /*
+            First button:
+            keep its LEFT edge fixed.
+
+            Last button:
+            keep its RIGHT edge fixed.
+
+            Middle buttons expand normally.
+        */
+
+        if (index === 0) {
+
+            button.style.transformOrigin =
+                "left center";
+
+        } else if (
+            index === buttons.length - 1
+        ) {
+
+            button.style.transformOrigin =
+                "right center";
+
+        } else {
+
+            button.style.transformOrigin =
+                "center center";
+        }
+
+
+        /*
+            Small vertical Dock lift.
+        */
+
+        button.style.translate =
+            `0 ${-(influence * 2)}px`;
+    });
+}
+
+
+/* ==========================================
+   CATEGORY DOCK MOUSE MOVE
+========================================== */
+
+shopCategories?.addEventListener(
+    "mousemove",
+    event => {
+
+        categoryDockMouseX =
+            event.clientX;
+
+        if (categoryDockFrame) {
+            return;
+        }
+
+        categoryDockFrame =
+            requestAnimationFrame(() => {
+
+                updateCategoryDock();
+
+                categoryDockFrame =
+                    null;
+            });
+    }
+);
+
+
+/* ==========================================
+   CATEGORY DOCK RESET
+========================================== */
+
+shopCategories?.addEventListener(
+    "mouseleave",
+    () => {
+
+        categoryDockMouseX = null;
+
+        if (categoryDockFrame) {
+
+            cancelAnimationFrame(
+                categoryDockFrame
+            );
+
+            categoryDockFrame = null;
+        }
+
+        shopCategories
+            .querySelectorAll(
+                ".shop-category-btn"
+            )
+            .forEach(button => {
+
+                button.style.width =
+                    `${CATEGORY_BASE_WIDTH}px`;
+
+                button.style.flexBasis =
+                    `${CATEGORY_BASE_WIDTH}px`;
+
+                button.style.translate =
+                    "0 0";
+
+                button.style.transformOrigin =
+                    "center center";
+            });
+    }
+);
