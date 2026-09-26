@@ -133,18 +133,14 @@
 .shop-categories {
     display: flex;
     align-items: center;
-
     gap: 7px;
 
-    margin-bottom: 38px;
-    margin: 1px;
-
-    padding: 4px 12px 6px;
+    margin-bottom: 5px;
+    padding-bottom: 2px;
 
     overflow-x: auto;
-    scrollbar-width: none;
 
-    box-sizing: border-box;
+    scrollbar-width: none;
 }
 
 .shop-categories::-webkit-scrollbar {
@@ -186,6 +182,8 @@
 
     border-color:
         rgba(168, 255, 62, 0.25);
+
+    transform: translateY(-1px);
 }
 
 .shop-category-btn.active {
